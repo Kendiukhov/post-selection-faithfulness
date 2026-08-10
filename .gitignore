@@ -1,0 +1,26 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+.DS_Store
+._*
+tmp/
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.synctex.gz
+paper/*.toc
+results/models/*.pt
+results/**/*.npz
+results/*.log
+
+# raw agent transcripts of the reference-verification runs; the curated
+# verified_refs*.json files are kept
+references/*_raw.json

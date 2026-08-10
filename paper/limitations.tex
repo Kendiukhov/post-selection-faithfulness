@@ -1,0 +1,77 @@
+\paragraph{We bound sampling and selection error, not construct validity.}
+A confidence bound answers ``if I ran this same evaluation on new interventions,
+what would I get?''. It does not answer ``is interchange-intervention accuracy
+the right thing to measure?''. A hypothesis can score highly for the wrong
+reason: subspace patching admits interpretability illusions
+\citep{makelov2024subspace}, and faithfulness scores move when the ablation
+scheme changes \citep{miller2024faithfulness,zhang2024bestpractices}. Our bounds
+inherit whatever the chosen metric means; they make the number reliable, not
+necessarily meaningful. The two concerns compose: an illusory hypothesis with a
+tight, valid bound is still illusory.
+
+\paragraph{Estimated ablation values.}
+Mean ablation replaces a component by an average over a reference distribution.
+In our experiments that average is computed once, before any resampling, and held
+fixed, so conditional on it the per-instance scores are i.i.d.\ functions of a
+single instance and the guarantees apply as stated. A practitioner who recomputes
+the ablation values inside each evaluation --- or who uses resample ablation ---
+is outside the stated guarantees, which is why the protocol asks for the values to
+be frozen.
+
+\paragraph{Few clusters.}
+Template-level inference is limited by the number of templates, not the number of
+prompts. With the \MyIOINTemplates{} templates we wrote, the cluster-robust band
+covers \MyClusterClusterCov{} rather than the nominal $95\%$; our simulations put
+the shortfall at about three points for $G\approx 25$ and none for $G\ge 50$
+(Table~\ref{tab:cluster}). Few-cluster inference is known to remain
+anti-conservative \citep{mnw2023clusterrobust}; the honest reading is that a
+template-level guarantee needs more templates, not more prompts.
+
+\paragraph{The bootstrap band is asymptotic.}
+Its validity rests on Gaussian approximation for maxima
+\citep{chernozhukov2013gaussian,cck2019moment}, which requires variances bounded
+away from zero --- a condition that a hypothesis scoring exactly $1$ on every
+sampled instance violates. We floor the studentising standard deviation at
+$n^{-1/2}$, provide the finite-sample-floored variant of
+Section~\ref{sec:methods}(c) for classes where this matters, and verify coverage
+empirically in every setting we report. The empirical-Bernstein and Occam bounds
+have no such caveat but pay a $\log|\Cclass|$ price.
+
+\paragraph{Continuous hypothesis classes.}
+Distributed alignment search optimises a rotation of the residual stream by
+gradient descent \citep{geiger2024finding}, so its hypothesis class is
+continuous and its search is adaptive. We handle only finite, pre-enumerated
+classes directly; for the continuous case the honest options are sample splitting
+(which we recommend) or an Occam bound over a discretisation, which requires a
+covering-number argument we do not develop here.
+
+\paragraph{Our hypothesis classes are ours, not the field's.}
+The magnitude of the optimism we report on GPT-2 depends on the class we
+enumerate ($|\Cclass|=\MyIOIm{}$ circuits built from the seven functional head
+groups of \citet{wang2023interpretability} plus size-stratified random subsets).
+A different class would give different numbers. That dependence is the point ---
+optimism is a property of the search, not of the model --- but it means our
+specific figures should be read as an illustration of magnitude rather than as a
+universal constant.
+
+\paragraph{The template population is a modelling choice.}
+Our cluster-robust analysis resamples the \MyIOINTemplates{} templates we wrote.
+Those templates are themselves a sample from an ill-defined population of
+``sentences that pose an indirect-object-identification problem'', and no
+resampling scheme can capture that. We report the cluster-robust interval as a
+lower bound on the honest uncertainty about the behaviour, not as its exact
+quantification.
+
+\paragraph{Reusable-holdout constants are loose.}
+Thresholdout \citep{dwork2015reusable} comes with a generalisation guarantee
+whose constants are far too conservative to yield a usable certificate at our
+sample sizes. We therefore report it as an empirically validated mechanism, and
+recommend a plain held-out set when a guarantee is required.
+
+\paragraph{Scale.}
+All experiments run on four tiny transformers and GPT-2 small, within
+\MyComputeHours{} GPU-hours on a single consumer accelerator. Nothing in the
+statistics depends on model size --- the input is a score matrix --- but we have
+not verified that the empirical magnitudes (effective number of hypotheses,
+intra-template correlation) transfer to larger models, where circuits are less
+sparse and behaviours more heterogeneous.

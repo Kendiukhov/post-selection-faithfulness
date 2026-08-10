@@ -1,0 +1,136 @@
+\section{Proofs}
+\label{app:proofs}
+
+\subsection{Proposition~\ref{prop:upper}}
+
+Let $D_c=\thetahat_n(c)-\theta(c)$ and $X_i = \varphi(c;Z_i)-\theta(c)$, so that
+$D_c=n^{-1}\sum_i X_i$, $\Ex X_i =0$, $|X_i|\le 1$ and $\Var X_i\le\sigma^2_{\max}$.
+Bernstein's moment-generating-function bound for a centred variable with
+$|X|\le b$ gives $\log\Ex e^{\lambda X}\le\lambda^2\Var(X)/(2(1-\lambda b/3))$ for
+$0<\lambda<3/b$; summing over $n$ independent copies and rescaling by $1/n$,
+\[
+\log\Ex e^{\lambda D_c}\;\le\;\frac{\lambda^2 v}{2(1-\kappa\lambda)},
+\qquad v=\frac{\sigma^2_{\max}}{n},\quad \kappa=\frac{1}{3n},
+\]
+which is exactly the statement that $D_c$ is \emph{sub-gamma on the right tail}
+with variance factor $v$ and scale parameter $\kappa$, in the sense of
+\citet[\S2.4]{boucheron2013concentration}. Their maximal inequality
+\citep[Cor.~2.6, p.~33]{boucheron2013concentration} --- which requires the
+variables to be centred but \emph{not} independent of one another, so the strong
+correlation between circuit hypotheses is harmless --- then gives
+\[
+\Ex\max_{c\in\Cclass} D_c \;\le\; \sqrt{2v\log m} + \kappa\log m
+\;=\; \sigma_{\max}\sqrt{\frac{2\log m}{n}} + \frac{\log m}{3n}.
+\]
+Finally $\thetahat_n(\hchat)-\theta(\hchat)\le\max_c D_c$ pointwise for any
+selection rule, so the same bound holds for its expectation. \hfill$\square$
+
+\subsection{Proposition~\ref{prop:lower}}
+
+Under the stated model $\sqrt n(\thetahat_n(c)-\theta_0)/\sigma = N_c$ with
+$N_1,\dots,N_m$ i.i.d.\ standard normal, and the arg-max selects the largest
+$N_c$, so $\thetahat_n(\hchat)-\theta(\hchat)=(\sigma/\sqrt n)\max_c N_c$
+exactly. For i.i.d.\ standard normals the classical Sudakov-type lower bound
+\citep[Thm.~13.4 and Exercise~13.6]{boucheron2013concentration} gives
+$\Ex\max_{j\le m}N_j\ge c_0\sqrt{\log m}$, and the largest constant for which this
+holds at every $m\ge2$ is $c_0=1/\sqrt{\pi\log 2}\approx0.6777$: the ratio
+$\Ex[\max_{j\le m}N_j]/\sqrt{\log m}$ is minimised at $m=2$, where
+$\Ex\max = 1/\sqrt\pi$ exactly, and increases thereafter (we verified this
+numerically up to $m=10^5$; the ratio is $0.678$ at $m=2$, $0.874$ at $m=4$ and
+$1.269$ at $m=10^4$). Combining with the sub-Gaussian upper bound
+$\Ex\max_{j\le m}N_j\le\sqrt{2\log m}$ gives the claim. The maximum is in fact
+asymptotically $\sqrt{2\log m}$ \citep[Exercise~2.17]{boucheron2013concentration},
+so the upper bound of Proposition~\ref{prop:upper} is sharp in this model.
+\hfill$\square$
+
+\subsection{Proposition~\ref{prop:naivecov}}
+
+The naive bound at $\hchat$ is
+$\thetahat_n(\hchat)-z_{1-\alpha}\sigmahat(\hchat)/\sqrt n$, and (treating
+$\sigmahat$ as $\sigma$, which is exact in the Gaussian limit) it covers iff
+$G_{\hchat}\le z_{1-\alpha}$. Since $\hchat=\argmax_c\thetahat_n(c)$ and all
+$\theta(c)$ and $\sigma(c)$ are equal, $\hchat=\argmax_c G_c$, so the coverage
+event is exactly $\{\max_c G_c\le z_{1-\alpha}\}$. Writing the equicorrelated
+Gaussian vector as $G_c=\sqrt\rho\,W+\sqrt{1-\rho}\,\varepsilon_c$ with
+$W,\varepsilon_1,\dots,\varepsilon_m$ i.i.d.\ standard normal and conditioning on
+$W$ makes the coordinates independent, giving the stated integral.
+\hfill$\square$
+
+\subsection{Validity of the bounds in Section~\ref{sec:methods}}
+
+\paragraph{(a) and (b).} Both are unions of the Maurer--Pontil bound
+\citep[Thm.~4]{maurer2009empirical}, applied at level $\alpha/m$ and
+$\alpha\pi(c)$ respectively. In case (b), $\sum_c \alpha\pi(c)\le\alpha$ because
+$\pi$ is a sub-probability, so the union bound applies. Both statements are
+\emph{simultaneous} over $\Cclass$, hence hold at the (random) $\hchat$:
+\[
+\Prb\big(\theta(\hchat)<L(\hchat)\big)\le\Prb\big(\exists c:\theta(c)<L(c)\big)\le\alpha .
+\]
+Crucially, this argument uses nothing about how $\hchat$ was chosen, so it covers
+greedy search, gradient-based alignment search, and human inspection alike.
+
+\paragraph{(c).} Write $x_{ic}=\varphi(c;Z_i)-\theta(c)$. For the
+\emph{non-studentised} maximum $\max_c n^{-1/2}\sum_i x_{ic}$,
+\citet[Thm.~3.2 and Cor.~3.1]{chernozhukov2013gaussian} show that the Gaussian
+multiplier bootstrap quantile satisfies
+$\sup_{\alpha\in(0,1)}|\Prb(T\le c_W(\alpha))-\alpha|\le Cn^{-c}$ provided
+(i) $c_1\le n^{-1}\sum_i\Ex[x_{ic}^2]\le C_1$ for every $c$ and
+(ii) $B_n^2(\log(mn))^7/n\le C_2 n^{-c_2}$, where $B_n$ is an envelope constant.
+Our scores are bounded in $[0,1]$, so $B_n=1$ and condition (ii) reduces to
+$(\log(mn))^7/n\le C_2n^{-c_2}$, i.e.\ $\log m$ may grow almost as fast as
+$n^{1/7}$. The band we actually use is \emph{studentised} and is built from the
+\emph{empirical} (resampling) bootstrap with the standard deviation recomputed
+in each replicate; validity for exactly this construction --- the studentised
+maximum with either multiplier or empirical bootstrap critical values --- is
+\citet[Thm.~4.3, ``Validity of one-step MB and EB methods'']{cck2019moment},
+whose Comment~4.6 describes the result as the studentised counterpart of the
+2013 theorem. Condition~(i) is the one that
+bites in practice: a hypothesis scoring exactly $1$ on every instance has
+$\sigmahat(c)=0$. We floor $\sigmahat$ at $10^{-4}$; in every experiment reported
+here we also verify coverage empirically, which is the ultimate check.
+
+\paragraph{(d).} Conditionally on the selection half, $\hchat$ is fixed and the
+evaluation half is an i.i.d.\ sample independent of it, so the $m=1$ bound
+applies conditionally and therefore marginally.
+
+\section{The ratio metric}
+\label{app:ratio}
+
+Write $a_c=\Ex[\mathrm{LD}(c)]$, $b=\Ex[\mathrm{LD}(\emptyset)]$,
+$f=\Ex[\mathrm{LD}(\text{full})]$ and $F(c)=(a_c-b)/(f-b)$. The map
+$(a,b,f)\mapsto(a-b)/(f-b)$ is differentiable wherever $f\ne b$, with gradient
+\[
+\Big(\tfrac{1}{f-b},\ \tfrac{-1}{f-b}+\tfrac{a-b}{(f-b)^2},\ \tfrac{-(a-b)}{(f-b)^2}\Big).
+\]
+Substituting the empirical means and multiplying by the centred per-instance
+vector gives the influence contribution quoted in Section~\ref{sec:ratio}:
+\[
+\psi_i(c)=\frac{\big(\mathrm{LD}_i(c)-\hat a_c\big)-\big(\mathrm{LD}_i(\emptyset)-\hat b\big)}{\hat f-\hat b}
+-\hat F(c)\,\frac{\big(\mathrm{LD}_i(\text{full})-\hat f\big)-\big(\mathrm{LD}_i(\emptyset)-\hat b\big)}{\hat f-\hat b}.
+\]
+The delta method gives $\hat F(c)-F(c)=n^{-1}\sum_i\psi_i(c)+o_P(n^{-1/2})$
+uniformly over $c$ under bounded fourth moments, so the multiplier bootstrap
+applied to $\psi$ yields a simultaneous band exactly as in
+Section~\ref{sec:methods}(c).
+
+\paragraph{A finite-sample alternative.}
+If the per-instance logit differences are known to lie in $[\ell,u]$, one can
+build two-sided empirical-Bernstein intervals for $a_c$ (simultaneously over $c$,
+at level $\alpha/3$), for $b$ and for $f$ (each at level $\alpha/3$), and then
+report the worst-case value of $(a-b)/(f-b)$ over the resulting box. The result
+is a finite-sample, simultaneous, post-selection-valid bound; it is considerably
+more conservative than the bootstrap band, but it does not rely on asymptotics.
+This is implemented as \texttt{psf.functional.ratio\_union\_lcb}.
+
+\section{Experimental details}
+\label{app:details}
+
+\input{generated/app_details}
+
+\section{Additional results}
+\label{app:extra}
+
+\input{generated/tab_synth}
+\input{generated/tab_cluster}
+\input{generated/tab_greedy}
+\input{generated/tab_bootvariant}

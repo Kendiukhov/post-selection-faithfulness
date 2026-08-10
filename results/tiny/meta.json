@@ -1,0 +1,86 @@
+{
+  "tt_a": {
+    "task": "equality",
+    "variable": "V1",
+    "N": 60000,
+    "m": 450,
+    "model_acc": 1.0,
+    "theta_max": 0.996999979019165,
+    "argmax_label": "resid_post.0@p2:std[0:64]"
+  },
+  "tt_a_iit": {
+    "task": "equality",
+    "variable": "V1",
+    "N": 60000,
+    "m": 450,
+    "model_acc": 1.0,
+    "theta_max": 1.0,
+    "argmax_label": "resid_post.0@p2:std[0:16]",
+    "planted": [
+      {
+        "variable": "V1",
+        "site": "resid_post.0",
+        "position": 2,
+        "dims": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ]
+      },
+      {
+        "variable": "V2",
+        "site": "resid_post.0",
+        "position": 4,
+        "dims": [
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31
+        ]
+      }
+    ]
+  },
+  "tt_b": {
+    "task": "induction",
+    "N": 60000,
+    "m": 256,
+    "model_acc": 1.0,
+    "ld_full": 15.675296783447266,
+    "ld_empty": 0.2715626657009125,
+    "agree_max": 1.0
+  },
+  "tt_c": {
+    "task": "arithmetic",
+    "variable": "S1",
+    "N": 60000,
+    "m": 480,
+    "model_acc": 1.0,
+    "theta_max": 0.12790000438690186,
+    "argmax_label": "resid_post.0@p3:std[32:64]"
+  }
+}

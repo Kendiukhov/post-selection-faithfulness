@@ -1,0 +1,47 @@
+Everything above reduces to a short checklist. It costs one extra column in a
+results table and no extra model forwards beyond the ones already being run.
+
+\begin{enumerate}\itemsep3pt
+\item \textbf{Write down the hypothesis class before you look at the data, and
+report its size.} ``All subsets of these 26 heads'', ``all (layer, position,
+$k$-dimensional coordinate block) triples'' --- whatever it is. If you cannot
+name it, you cannot correct for it, and you should hold data out instead.
+
+\item \textbf{Say which population your interventions represent.} New fills of
+your templates, or new templates? The two give different error bars
+(Section~\ref{sec:cluster}); report the cluster-robust one if you mean the
+second, and say which you mean.
+
+\item \textbf{Keep the per-instance scores, not just their average.} The
+$n\times|\Cclass|$ matrix is what every bound in this paper consumes; it costs
+nothing extra to save and it lets a reader recompute any interval.
+
+\item \textbf{Freeze the ablation values.} Mean ablation replaces a component by
+an average, and if that average is computed from the evaluation sample itself
+then the per-instance score is not a function of a single instance and none of
+the bounds apply as stated. Compute the ablation values once, on a reference set
+disjoint from the evaluation instances, and hold them fixed. (Resample ablation
+has the same issue and is not covered by our guarantees at all.)
+
+\item \textbf{Pick a bound.}
+\emph{(i)} If the class was fixed in advance and is enumerable, use the
+bootstrap-$t$ simultaneous band --- it is the tightest, it certifies every
+hypothesis you looked at, and it adapts to the correlation between them. If some
+hypotheses may be perfect on every sampled instance, use the floored variant.
+\emph{(ii)} If the class is a power set of components, use the Occam bound with
+the size-stratified prior.
+\emph{(iii)} If the search was adaptive (greedy pruning, gradient-based alignment
+search, or an investigator iterating), hold interventions out. In
+interpretability the evaluation data is synthetic and nearly free, so this is
+almost always the right answer.
+
+\item \textbf{Report the certified lower bound next to the point estimate}, and
+report $m_{\mathrm{eff}}$. A reader then sees both the number and its warranty.
+
+\item \textbf{Pre-register the final circuit.} The cheapest way to get a tight
+interval is to fix the circuit, generate fresh interventions, and evaluate once:
+the multiplicity penalty disappears entirely. In our GPT-2 experiment this is
+worth \MyPreRegGain{} of certified faithfulness at $n=1000$
+(Table~\ref{tab:main} versus the pre-registered row in
+Appendix~\ref{app:extra}).
+\end{enumerate}

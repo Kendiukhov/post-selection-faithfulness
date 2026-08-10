@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+title: >-
+  How Faithful Is the Circuit You Found? Post-Selection-Valid
+  Confidence Bounds for Mechanistic Interpretability
+message: If you use this software or the accompanying paper, please cite it.
+type: software
+authors:
+  - name: Anonymous
+abstract: >-
+  A library and a set of experiments for lower confidence bounds on the graded
+  faithfulness of a mechanistic circuit hypothesis that remain valid however the
+  circuit was selected: empirical-Bernstein union bounds, prior-weighted (Occam)
+  bounds over power sets of components, empirical bootstrap-t simultaneous bands,
+  cluster-robust variants, sample splitting, and selective (polyhedral) intervals.
+keywords:
+  - mechanistic interpretability
+  - causal abstraction
+  - post-selection inference
+  - selective inference
+  - bootstrap
+  - confidence bounds
+license: MIT
+version: 0.1.0

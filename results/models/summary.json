@@ -1,0 +1,15 @@
+{
+  "tt_a_equality": {
+    "acc": 1.0,
+    "n_params": 102080
+  },
+  "tt_a_equality_iit": {
+    "acc": 1.0
+  },
+  "tt_b_induction": {
+    "acc": 1.0
+  },
+  "tt_c_arithmetic": {
+    "acc": 1.0
+  }
+}
