@@ -1,0 +1,41 @@
+% auto-generated
+\begin{table}[t]
+\centering
+\small
+\caption{\textbf{Certifying the selected circuit on GPT-2 small (IOI).}
+The investigator picks the highest-scoring of $|\mathcal{C}|=840$ circuit
+hypotheses using $n=1000$ interventions and reports its faithfulness (behavioural
+agreement: does the ablated model still rank the indirect object above the
+subject?). Coverage is the probability that the reported lower bound really is
+below the selected circuit's true faithfulness; the nominal level is $0.95$.
+``Certified'' is the mean reported lower bound --- among methods that achieve
+nominal coverage, higher is better. The naive interval, which ignores the search,
+covers 59\%
+of the time. Over 350 independent replications; $\dagger$ marks coverage
+significantly below nominal.}
+\label{tab:main}
+\begin{tabular}{lcc}
+\toprule
+method & coverage & certified $L(\hat c)$ \\
+\midrule
+naive $\pm z\,\mathrm{SE}$ \emph{(invalid)} & 0.589$^{\dagger}$ & 0.997 \\
+union bound, Hoeffding & 1.000 & 0.929 \\
+union bound, empirical Bernstein & 1.000 & 0.969 \\
+union bound, best of two & 1.000 & 0.967 \\
+Occam bound (size prior) & 1.000 & 0.814 \\
+bootstrap simultaneous band & 0.986 & 0.992 \\
+bootstrap band, finite-sample floor & 1.000 & 0.986 \\
+sample splitting ($50/50$) & 0.794$^{\dagger}$ & 0.991 \\
+sample splitting, finite-sample & 1.000 & 0.972 \\
+conditional (selective) & 0.791$^{\dagger}$ & -2.959 \\
+hybrid selective & 0.791$^{\dagger}$ & 0.990 \\
+\midrule
+\multicolumn{3}{p{0.88\linewidth}}{\emph{Selection diagnostics.} Naive point
+estimate 0.998; true faithfulness of the selected circuit
+0.997; optimism $+0.002$.
+Multiplicity factor $\kappa=3.72$, against a Bonferroni
+factor of $2.34$ for $|\mathcal{C}|=840$ independent
+hypotheses.} \\
+\bottomrule
+\end{tabular}
+\end{table}

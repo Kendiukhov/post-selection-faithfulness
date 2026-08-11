@@ -38,7 +38,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from psf import bounds as B  # noqa: E402
 from psf.evaluate import Selection, default_methods, run_replicates, summarize  # noqa: E402
-from psf.functional import influence_band, ratio_influence  # noqa: E402
+from psf.functional import influence_band, ratio_band, ratio_influence  # noqa: E402
 
 
 def icc(values: np.ndarray, clusters: np.ndarray) -> float:
@@ -76,8 +76,16 @@ def main() -> None:
     out: dict = {"N": int(N), "m": int(m), "alpha": args.alpha, "R": args.R}
 
     # ---------------------------------------------------------------- 1
-    pub = int(np.flatnonzero(labels == "published_ioi_circuit")[0])
-    full = int(np.flatnonzero(labels == "all_heads")[0])
+    # locate the published circuit and the full model by their head sets: the
+    # class builder de-duplicates, so these may carry a different label
+    circ = json.load(open(os.path.join(os.path.dirname(args.scores), "circuits.json")))
+    head_sets = [frozenset(map(tuple, c["heads"])) for c in circ]
+    from psf.ioi import ioi_circuit_heads
+
+    pub_set = frozenset(ioi_circuit_heads())
+    full_set = frozenset((l, h) for l in range(12) for h in range(12))
+    pub = head_sets.index(pub_set)
+    full = head_sets.index(full_set)
     out["descriptives"] = {
         "n_templates": int(np.unique(template).size),
         "ld_full_mean": float(ld_full.mean()),
@@ -162,15 +170,31 @@ def main() -> None:
         "icc_published": float(icc(acc[:, pub], template)),
         "rows": [], "diag": [],
     }
-    print(f"  median ICC across circuits: {np.median(iccs):.3f} (G = {G} templates)")
+    sizes_per_template = np.bincount(template)
+    balanced = bool(np.all(sizes_per_template[sizes_per_template > 0] ==
+                           sizes_per_template[sizes_per_template > 0][0]))
+    theta_cluster = np.stack(
+        [acc[template == u].mean(axis=0) for u in np.unique(template)]
+    ).mean(axis=0)
+    out["cluster"]["balanced_templates"] = balanced
+    out["cluster"]["max_abs_theta_shift"] = float(np.abs(theta_cluster - theta).max())
+    print(f"  median ICC across circuits: {np.median(iccs):.3f} (G = {G} templates); "
+          f"templates balanced: {balanced}")
+    # The finite-sample union bounds assume i.i.d. instances, so they are not
+    # valid under cluster sampling and are excluded here.  We also use the
+    # size-constrained selection: the unconstrained arg-max is a circuit that is
+    # perfect on every sampled prompt, and its near-degenerate variance would
+    # dominate the comparison we are trying to make.
     cl_methods = default_methods(
         family_size=m, n_boot=2000, log_prior=log_prior,
-        include=("naive", "boot-max", "boot-max-cluster", "union-best", "split"),
+        include=("naive", "boot-max", "boot-max-cluster"),
     )
+    cl_sel = Selection("argmax_size_le", max_size=8, sizes=sizes)
+    out["cluster"]["selection"] = "size<=8"
     for n in [500, 1000, 2000]:
         res = run_replicates(
-            acc, n=n, R=args.R, methods=cl_methods, selection=Selection("argmax"),
-            alpha=args.alpha, seed=args.seed + 31 + n, theta=theta,
+            acc, n=n, R=args.R, methods=cl_methods, selection=cl_sel,
+            alpha=args.alpha, seed=args.seed + 31 + n, theta=theta_cluster,
             scheme="cluster", clusters=template, n_clusters_draw=G,
         )
         for row in summarize(res, cl_methods, args.alpha):
@@ -276,7 +300,9 @@ def main() -> None:
             F, psi = ratio_influence(ld[ii], ld_empty[ii], ld_full[ii])
             j = int(np.argmax(F))
             op.append(F[j] - F_pool[j])
-            lb, _ = influence_band(F, psi, alpha=args.alpha, n_boot=1200, seed=r)
+            _, lb, _ = ratio_band(
+                ld[ii], ld_empty[ii], ld_full[ii], alpha=args.alpha, n_boot=600, seed=r
+            )
             cb += lb[j] <= F_pool[j]
             wb.append(F[j] - lb[j])
             se = np.sqrt((psi**2).sum(axis=0) / (n * (n - 1)))

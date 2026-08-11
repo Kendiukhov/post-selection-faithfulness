@@ -1,0 +1,33 @@
+% auto-generated
+\begin{table}[t]
+\centering
+\small
+\caption{\textbf{Which correction to use, as a function of the search.}
+Simulated binary faithfulness scores with $\theta(c)\equiv 0.80$ for all
+hypotheses (the complete null), $n=1000$ interventions, equicorrelation $\rho$
+between hypotheses, 400 replications. $\hat q$ is the
+bootstrap critical value and $m_{\mathrm{eff}}$ the number of independent
+hypotheses it corresponds to; both fall far below the Bonferroni value once the
+hypotheses are correlated, which is why the bootstrap band certifies more than a
+union bound. Sample splitting overtakes it only when the class is large and
+uncorrelated.}
+\label{tab:synth}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{cc c c ccc ccc c}
+\toprule
+& & & naive & \multicolumn{3}{c}{multiplicity} & \multicolumn{4}{c}{certified $L(\hat c)$} \\
+\cmidrule(lr){5-7} \cmidrule(lr){8-11}
+$|\mathcal{C}|$ & $\rho$ & optimism & cover & $\hat q$ & Bonf. & $m_{\mathrm{eff}}$ & boot & union & split & hybrid \\
+\midrule
+20 & 0.0 & 0.023 & 0.38 & 2.95 & 2.81 & 17.0 & 0.788 & 0.765 & 0.771 & 0.778 \\
+20 & 0.5 & 0.020 & 0.54 & 2.89 & 2.81 & 10.9 & 0.784 & 0.762 & 0.771 & 0.775 \\
+20 & 0.9 & 0.013 & 0.76 & 2.62 & 2.81 & 8.1 & 0.780 & 0.755 & 0.770 & 0.769 \\
+200 & 0.0 & 0.034 & 0.00 & 3.72 & 3.48 & 926.0 & 0.790 & 0.767 & 0.771 & 0.783 \\
+200 & 0.5 & 0.029 & 0.13 & 3.60 & 3.48 & 154.1 & 0.786 & 0.762 & 0.769 & 0.777 \\
+200 & 0.9 & 0.020 & 0.50 & 3.13 & 3.48 & 28.6 & 0.782 & 0.753 & 0.770 & 0.771 \\
+2000 & 0.0 & 0.042 & 0.00 & 4.38 & 4.06 & 3231.6 & 0.792 & 0.767 & 0.770 & 0.785 \\
+2000 & 0.5 & 0.036 & 0.02 & 4.22 & 4.06 & 2117.8 & 0.786 & 0.761 & 0.771 & 0.778 \\
+2000 & 0.9 & 0.024 & 0.37 & 3.55 & 4.06 & 94.4 & 0.781 & 0.749 & 0.769 & 0.770 \\
+\bottomrule
+\end{tabular}}
+\end{table}

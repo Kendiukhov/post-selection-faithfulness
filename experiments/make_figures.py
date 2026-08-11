@@ -59,6 +59,20 @@ NICE = {
     "conditional": "conditional (selective)",
     "hybrid": "hybrid selective",
 }
+SHORT = {
+    "naive": "naive",
+    "union-hoeffding": "Hoeffding",
+    "union-eb": "emp. Bernstein",
+    "union-best": "union bound",
+    "occam": "Occam",
+    "boot-max": "bootstrap-$t$",
+    "boot-floored": "boot + floor",
+    "boot-max-cluster": "cluster boot",
+    "split": "splitting",
+    "split-eb": "splitting (f.s.)",
+    "conditional": "conditional",
+    "hybrid": "hybrid",
+}
 ORDER = [
     "naive", "union-hoeffding", "union-eb", "union-best", "occam",
     "boot-max", "boot-floored", "boot-max-cluster", "split", "split-eb",
@@ -100,66 +114,83 @@ def pct(x: float, d: int = 1) -> str:
 
 
 def fig_anatomy(syn: dict, outdir: str) -> None:
-    fig, axes = plt.subplots(1, 3, figsize=(TEXTWIDTH, 2.15))
+    fig, axes = plt.subplots(1, 3, figsize=(TEXTWIDTH, 2.25), constrained_layout=True)
 
     # (a) exact naive coverage vs m
     ax = axes[0]
     A = syn["A"]
     ms = np.array(A["ms"])
-    for r in A["rhos"]:
-        ax.plot(ms, A["exact"][str(r)], label=f"$\\rho={r}$", lw=1.6)
-    for r in A["rhos"]:
-        ax.plot(A["sim_ms"], A["sim"][str(r)], "o", ms=3.2, mfc="none", color="k", alpha=0.55)
-    ax.axhline(0.95, color="k", ls="--", lw=0.9)
+    cols = plt.cm.viridis(np.linspace(0.05, 0.85, len(A["rhos"])))
+    for col, r in zip(cols, A["rhos"]):
+        ax.plot(ms, A["exact"][str(r)], color=col, lw=1.5, label=f"$\\rho={r}$")
+        ax.plot(A["sim_ms"], A["sim"][str(r)], "o", ms=2.6, mfc="none", mew=0.8, color=col)
+    ax.axhline(0.95, color="k", ls="--", lw=0.8)
     ax.set_xscale("log")
-    ax.set_xlabel("number of hypotheses searched")
-    ax.set_ylabel("coverage of the naive 95\\% bound")
-    ax.set_title("(a) The usual error bar stops working")
-    ax.set_ylim(-0.02, 1.02)
-    ax.legend(frameon=False, loc="lower left", ncol=2)
-    ax.text(0.97, 0.93, "circles: simulation\nlines: exact", transform=ax.transAxes,
-            ha="right", va="top", fontsize=7, color="0.3")
+    ax.set_xlabel("hypotheses searched")
+    ax.set_ylabel("coverage of the naive 95% bound")
+    ax.set_title("(a) The usual error bar fails")
+    ax.set_ylim(-0.03, 1.06)
+    ax.legend(frameon=False, loc="upper right", ncol=2, handlelength=1.2,
+              columnspacing=0.8, borderpad=0.1)
+    ax.text(0.97, 0.62, "lines: exact\ncircles: simulation", transform=ax.transAxes,
+            fontsize=5.8, color="0.35", ha="right", va="top")
 
     # (b) optimism scaling
     ax = axes[1]
     rows = [r for r in syn["B"]["rows"] if r["rho"] == 0.0]
     ms_b = sorted({r["m"] for r in rows})
-    cmap = plt.cm.viridis(np.linspace(0.1, 0.9, len(ms_b)))
+    cmap = plt.cm.viridis(np.linspace(0.05, 0.85, len(ms_b)))
     for col, m in zip(cmap, ms_b):
         rr = sorted([r for r in rows if r["m"] == m], key=lambda x: x["n"])
-        ax.plot([r["n"] for r in rr], [r["optimism"] for r in rr], "o-", ms=3,
-                color=col, lw=1.3, label=f"$m={m}$")
+        ax.plot([r["n"] for r in rr], [r["optimism"] for r in rr], "o-", ms=2.4,
+                color=col, lw=1.2, label=f"{m}")
         ax.plot([r["n"] for r in rr], [r["predicted_iid"] for r in rr], ":", color=col, lw=1.0)
     ax.set_xscale("log")
     ax.set_yscale("log")
-    ax.set_xlabel("number of interventions $n$")
-    ax.set_ylabel("optimism (reported $-$ true faithfulness)")
-    ax.set_title("(b) Optimism follows the predicted law")
-    ax.legend(frameon=False, fontsize=7, ncol=1)
-    ax.text(0.03, 0.06, "dotted: theory", transform=ax.transAxes, fontsize=7, color="0.3")
+    ax.set_xlabel("interventions $n$")
+    ax.set_ylabel("reported $-$ true faithfulness")
+    ax.set_title("(b) Optimism follows the theory")
+    leg = ax.legend(frameon=False, fontsize=5.8, ncol=2, title="hypotheses",
+                    handlelength=1.2, columnspacing=0.8, borderpad=0.1, loc="lower left")
+    leg.get_title().set_fontsize(5.8)
+    ax.text(0.97, 0.95, "dotted: $\\sigma\\sqrt{2\\log m/n}$", transform=ax.transAxes,
+            fontsize=5.8, color="0.35", ha="right", va="top")
 
-    # (c) certified value vs coverage across regimes
+    # (c) how much each method certifies, as the hypotheses become correlated
     ax = axes[2]
     rows = [r for r in syn["C"]["rows"] if r.get("method") not in (None, "_diag", "_selection")]
-    sel = [r for r in rows if r["n"] == 1000 and r["shape"] == "flat" and r["m"] == 200]
-    names = [r["method"] for r in sel]
-    xs = [r["coverage"] for r in sel]
-    ys = [r["mean_lcb"] for r in sel]
-    for nm, x, y in zip(names, xs, ys):
-        ax.scatter(x, y, s=34, color=PALETTE.get(nm, "k"), zorder=3,
-                   marker="X" if nm == "naive" else "o")
-        ax.annotate(NICE.get(nm, nm), (x, y), textcoords="offset points",
-                    xytext=(5, 3), fontsize=6.6, color=PALETTE.get(nm, "k"))
-    ax.axvline(0.95, color="k", ls="--", lw=0.9)
-    ax.set_xlabel("coverage (nominal 0.95)")
+    rhos = sorted({r["rho"] for r in rows if r["shape"] == "flat"})
+    show = ["boot-max", "boot-floored", "union-best", "split", "split-eb", "hybrid"]
+    for nm in show:
+        pts = [
+            next((r for r in rows if r["shape"] == "flat" and r["m"] == 200
+                  and r["n"] == 1000 and r["rho"] == rho and r["method"] == nm), None)
+            for rho in rhos
+        ]
+        if any(p is None for p in pts):
+            continue
+        ax.plot(rhos, [p["mean_lcb"] for p in pts], "o-", ms=2.8, lw=1.2,
+                color=PALETTE.get(nm, "0.5"), label=SHORT.get(nm, nm))
+    nv = [
+        next((r for r in rows if r["shape"] == "flat" and r["m"] == 200 and r["n"] == 1000
+              and r["rho"] == rho and r["method"] == "naive"), None)
+        for rho in rhos
+    ]
+    if all(v is not None for v in nv):
+        ax.plot(rhos, [v["mean_lcb"] for v in nv], "x--", ms=4, lw=1.1,
+                color=PALETTE["naive"], label="naive (invalid)")
+    ax.axhline(0.80, color="k", ls=":", lw=1.0)
+    ax.text(0.02, 0.801, "true faithfulness", fontsize=5.8, color="0.25", va="bottom")
+    ax.set_xlabel("correlation between hypotheses $\\rho$")
     ax.set_ylabel("mean certified lower bound")
-    ax.set_title("(c) Valid methods, ranked by what they certify")
-    ax.set_xlim(-0.03, 1.05)
-    fig.tight_layout()
+    ax.set_title("(c) What each method certifies")
+    ax.set_xticks(rhos)
+    ax.legend(frameon=False, fontsize=5.6, ncol=2, handlelength=1.4,
+              columnspacing=0.7, borderpad=0.1, loc="lower left")
+
     fig.savefig(os.path.join(outdir, "fig_anatomy.pdf"))
     plt.close(fig)
 
-    # macros
     exact0 = dict(zip(A["ms"], A["exact"]["0.0"]))
     exact9 = dict(zip(A["ms"], A["exact"]["0.9"]))
     m100 = min(A["ms"], key=lambda x: abs(x - 100))
@@ -173,58 +204,60 @@ def fig_anatomy(syn: dict, outdir: str) -> None:
 
 
 def fig_tiny(tiny: dict, outdir: str) -> None:
-    tags = [t for t in ["tt_a", "tt_a_local", "tt_a_iit", "tt_c", "tt_b"] if t in tiny]
+    tags = [t for t in ["tt_a", "tt_a_local", "tt_c", "tt_b"] if t in tiny]
     titles = {
-        "tt_a": "(a) TT-A equality: a clear winner",
-        "tt_a_local": "(b) TT-A equality: near-ties",
-        "tt_a_iit": "(c) TT-A-IIT: planted alignment",
-        "tt_c": "(d) TT-C arithmetic: nothing faithful",
-        "tt_b": "(e) TT-B induction: head subsets",
+        "tt_a": "(a) a clear winner",
+        "tt_a_local": "(b) near-ties",
+        "tt_c": "(c) nothing is faithful",
+        "tt_b": "(d) head subsets",
     }
-    fig, axes = plt.subplots(2, len(tags), figsize=(TEXTWIDTH, 3.6), sharex=True)
-    if len(tags) == 1:
-        axes = axes[:, None]
+    show = ["naive", "union-best", "boot-max", "boot-floored", "split", "split-eb", "hybrid"]
+    fig, axes = plt.subplots(2, len(tags), figsize=(TEXTWIDTH, 3.4),
+                             sharex=True, constrained_layout=True)
     for k, tag in enumerate(tags):
         rows = tiny[tag]["rows"]
-        ns = sorted({r["n"] for r in rows if r["method"] != "_selection"})
-        # top: coverage
         ax = axes[0, k]
-        for nm in ORDER:
+        for nm in show:
             rr = sorted([r for r in rows if r["method"] == nm], key=lambda x: x["n"])
             if not rr:
                 continue
-            ax.plot([r["n"] for r in rr], [r["coverage"] for r in rr], "o-", ms=2.8, lw=1.2,
-                    color=PALETTE[nm], label=NICE[nm])
-        ax.axhline(0.95, color="k", ls="--", lw=0.9)
+            ax.plot([r["n"] for r in rr], [r["coverage"] for r in rr], "o-", ms=2.2, lw=1.0,
+                    color=PALETTE[nm], label=SHORT.get(nm, nm))
+        ax.axhline(0.95, color="k", ls="--", lw=0.8)
         ax.set_xscale("log")
-        ax.set_ylim(-0.03, 1.05)
+        ax.set_ylim(-0.03, 1.06)
         ax.set_title(titles.get(tag, tag))
         if k == 0:
             ax.set_ylabel("coverage")
-        # bottom: certified value
+
         ax = axes[1, k]
-        for nm in ORDER:
+        sel = sorted([r for r in rows if r["method"] == "_selection"], key=lambda x: x["n"])
+        vals = []
+        for nm in show:
             rr = sorted([r for r in rows if r["method"] == nm], key=lambda x: x["n"])
             if not rr:
                 continue
-            ax.plot([r["n"] for r in rr], [r["mean_lcb"] for r in rr], "o-", ms=2.8, lw=1.2,
+            ax.plot([r["n"] for r in rr], [r["mean_lcb"] for r in rr], "o-", ms=2.2, lw=1.0,
                     color=PALETTE[nm])
-        sel = sorted([r for r in rows if r["method"] == "_selection"], key=lambda x: x["n"])
+            vals += [r["mean_lcb"] for r in rr]
         if sel:
             ax.plot([r["n"] for r in sel], [r["mean_theta_selected"] for r in sel], "k:",
-                    lw=1.4, label="truth $\\theta(\\hat c)$")
+                    lw=1.3, label="truth")
             ax.plot([r["n"] for r in sel], [r["mean_point"] for r in sel], color="0.45",
-                    ls=(0, (4, 2)), lw=1.2, label="naive point estimate")
+                    ls=(0, (4, 2)), lw=1.1, label="naive point estimate")
+            vals += [r["mean_theta_selected"] for r in sel] + [r["mean_point"] for r in sel]
+        hi = max(vals) + 0.02
+        lo = max(min(vals), min(vals) if min(vals) > -0.2 else -0.05) - 0.02
+        ax.set_ylim(lo, hi)
         ax.set_xscale("log")
-        ax.set_xlabel("interventions $n$")
         if k == 0:
             ax.set_ylabel("certified lower bound")
+        ax.set_xlabel("interventions $n$")
         if k == len(tags) - 1:
-            ax.legend(frameon=False, fontsize=6.5, loc="lower right")
+            ax.legend(frameon=False, fontsize=5.4, loc="lower right", borderpad=0.1)
     handles, labels = axes[0, 0].get_legend_handles_labels()
-    fig.legend(handles, labels, frameon=False, fontsize=7.2, ncol=5,
-               loc="lower center", bbox_to_anchor=(0.5, -0.045))
-    fig.tight_layout()
+    fig.legend(handles, labels, frameon=False, fontsize=6.2, ncol=7,
+               loc="outside lower center", handlelength=1.3, columnspacing=1.0)
     fig.savefig(os.path.join(outdir, "fig_tiny.pdf"))
     plt.close(fig)
 
@@ -235,60 +268,62 @@ def fig_tiny(tiny: dict, outdir: str) -> None:
 
 
 def fig_ioi(ioi: dict, outdir: str) -> None:
-    fig, axes = plt.subplots(1, 3, figsize=(TEXTWIDTH, 2.25))
+    fig, axes = plt.subplots(1, 3, figsize=(TEXTWIDTH, 2.3), constrained_layout=True)
 
-    # (a) coverage and certified value vs n
+    # (a) coverage vs n
     ax = axes[0]
     rows = [r for r in ioi["iid"]["rows"] if r.get("selection") == "argmax"]
-    for nm in ORDER:
+    for nm in ["naive", "split", "hybrid", "union-best", "boot-max", "boot-floored"]:
         rr = sorted([r for r in rows if r["method"] == nm], key=lambda x: x["n"])
         if not rr:
             continue
-        ax.plot([r["n"] for r in rr], [r["coverage"] for r in rr], "o-", ms=3, lw=1.3,
-                color=PALETTE[nm], label=NICE[nm])
+        ax.plot([r["n"] for r in rr], [r["coverage"] for r in rr], "o-", ms=2.6, lw=1.2,
+                color=PALETTE[nm], label=SHORT.get(nm, nm))
     ax.axhline(0.95, color="k", ls="--", lw=0.9)
     ax.set_xscale("log")
-    ax.set_ylim(-0.03, 1.05)
+    ax.set_ylim(-0.03, 1.06)
     ax.set_xlabel("interventions $n$")
     ax.set_ylabel("coverage")
-    ax.set_title("(a) Coverage on IOI, GPT-2 small")
-    ax.legend(frameon=False, fontsize=6.4, ncol=2, loc="lower right")
+    ax.set_title("(a) Coverage on IOI")
+    ax.legend(frameon=False, fontsize=5.6, ncol=2, loc="lower right",
+              handlelength=1.3, columnspacing=0.7, borderpad=0.1)
 
     # (b) certified Pareto frontier
     ax = axes[1]
-    fr = ioi["frontier"]["rows"]
+    fr = [r for r in ioi["frontier"]["rows"] if r["k"] <= 30]
     ks = [r["k"] for r in fr]
-    ax.plot(ks, [r["naive_point"] for r in fr], color="#B3282D", lw=1.5,
+    ax.plot(ks, [r["naive_point"] for r in fr], color=PALETTE["naive"], lw=1.4,
             label="naive point estimate")
-    ax.plot(ks, [r["truth"] for r in fr], "k:", lw=1.5, label="truth")
-    ax.plot(ks, [r["boot_lcb"] for r in fr], color="#1F1F1F", lw=1.5,
+    ax.plot(ks, [r["truth"] for r in fr], "k:", lw=1.4, label="truth")
+    ax.plot(ks, [r["boot_lcb"] for r in fr], color=PALETTE["boot-max"], lw=1.4,
             label="simultaneous band")
-    ax.plot(ks, [r["occam_lcb"] for r in fr], color="#55A868", lw=1.2, label="Occam bound")
-    ax.set_xlabel("circuit size budget (number of heads)")
-    ax.set_ylabel("faithfulness (IO ranked above S)")
-    ax.set_title("(b) The whole frontier, certified at once")
-    ax.legend(frameon=False, fontsize=7, loc="lower right")
+    ax.plot(ks, [r["occam_lcb"] for r in fr], color=PALETTE["occam"], lw=1.1,
+            label="Occam bound")
+    ax.set_xlabel("circuit size budget (heads)")
+    ax.set_ylabel("faithfulness")
+    ax.set_title("(b) The whole frontier at once")
+    ax.legend(frameon=False, fontsize=5.6, loc="lower right", handlelength=1.3,
+              borderpad=0.1)
 
-    # (c) clustered vs iid
+    # (c) clustered sampling
     ax = axes[2]
     cl = ioi["cluster"]["rows"]
     ns = sorted({r["n"] for r in cl})
     width = 0.36
-    meths = ["boot-max", "boot-max-cluster"]
-    for j, nm in enumerate(meths):
-        vals = [next(r["coverage"] for r in cl if r["n"] == n and r["method"] == nm) for n in ns]
+    for j, nm in enumerate(["boot-max", "boot-max-cluster"]):
+        vals = [next((r["coverage"] for r in cl if r["n"] == n and r["method"] == nm), np.nan)
+                for n in ns]
         ax.bar(np.arange(len(ns)) + (j - 0.5) * width, vals, width,
-               color=PALETTE[nm], label=NICE[nm])
+               color=PALETTE[nm], label=SHORT.get(nm, nm))
     ax.axhline(0.95, color="k", ls="--", lw=0.9)
     ax.set_xticks(np.arange(len(ns)))
     ax.set_xticklabels([str(n) for n in ns])
     ax.set_xlabel("prompts $n$ (drawn template-by-template)")
     ax.set_ylabel("coverage")
-    ax.set_ylim(0, 1.05)
-    ax.set_title("(c) Templates, not prompts, are the unit")
-    ax.legend(frameon=False, fontsize=7, loc="lower right")
+    ax.set_ylim(0, 1.08)
+    ax.set_title("(c) Templates are the unit")
+    ax.legend(frameon=False, fontsize=5.6, loc="lower right", borderpad=0.1)
 
-    fig.tight_layout()
     fig.savefig(os.path.join(outdir, "fig_ioi.pdf"))
     plt.close(fig)
 
@@ -299,30 +334,45 @@ def fig_ioi(ioi: dict, outdir: str) -> None:
 
 
 def fig_greedy(g: dict, outdir: str) -> None:
-    fig, axes = plt.subplots(1, 2, figsize=(TEXTWIDTH, 2.4))
+    fig, axes = plt.subplots(1, 2, figsize=(TEXTWIDTH, 2.3), constrained_layout=True,
+                             gridspec_kw={"width_ratios": [1.0, 1.25]})
+    sizes = np.array(g["sizes"])
+    sc = np.array(g["search_curve"])
+    ec = np.array(g["eval_curve"])
     ax = axes[0]
-    sizes = g["sizes"]
-    ax.plot(sizes, g["search_curve"], color="#B3282D", lw=1.5,
-            label="score on the search set")
-    ax.plot(sizes, g["eval_curve"], "k:", lw=1.5, label="score on held-out interventions")
+    ax.fill_between(sizes, ec, sc, where=sc >= ec, color=PALETTE["naive"], alpha=0.18, lw=0)
+    ax.plot(sizes, sc, color=PALETTE["naive"], lw=1.4, label="score on the search set")
+    ax.plot(sizes, ec, "k:", lw=1.4, label="score on held-out interventions")
+    ps = g["p_star"]
+    ax.plot([sizes[ps]], [sc[ps]], "o", ms=4, color="k", mfc="white", mew=1.2, zorder=5)
+    ax.annotate(f"returned circuit\n({g['final_size']} heads)",
+                (sizes[ps], sc[ps]), textcoords="offset points", xytext=(6, -2),
+                fontsize=5.8, color="0.25")
     ax.invert_xaxis()
     ax.set_xlabel("heads remaining")
-    ax.set_ylabel("fraction of logit difference recovered")
-    ax.set_title("(a) A greedy search overfits its own data")
-    ax.legend(frameon=False, fontsize=7.5)
+    ax.set_ylabel("fraction of logit difference\nrecovered")
+    ax.set_title("(a) A pruner overfits its own data")
+    ax.legend(frameon=False, fontsize=5.8, loc="lower center", borderpad=0.1)
+    ax.text(0.03, 0.30, f"largest gap\non the path:\n{g['max_gap_on_path']:.3f}",
+            transform=ax.transAxes, fontsize=5.8, color=PALETTE["naive"], va="top")
 
     ax = axes[1]
     labels = [r["name"] for r in g["bounds"]]
     vals = [r["lcb"] for r in g["bounds"]]
     cols = [r.get("color", "#4C72B0") for r in g["bounds"]]
-    ax.barh(range(len(vals)), vals, color=cols)
-    ax.axvline(g["truth"], color="k", ls=":", lw=1.4)
-    ax.set_yticks(range(len(vals)))
-    ax.set_yticklabels(labels, fontsize=7)
+    ypos = np.arange(len(vals))
+    ax.barh(ypos, vals, color=cols, height=0.62)
+    for y, v in zip(ypos, vals):
+        ax.text(v + 0.008, y, f"{v:.3f}", va="center", fontsize=5.8, color="0.2")
+    ax.axvline(g["truth"], color="k", ls=":", lw=1.2)
+    ax.text(g["truth"], len(vals) - 0.35, " truth", fontsize=5.8, color="0.25", va="top")
+    ax.set_yticks(ypos)
+    ax.set_yticklabels(labels, fontsize=5.8)
     ax.invert_yaxis()
+    ax.set_xlim(0, max(vals) * 1.22)
     ax.set_xlabel("certified faithfulness of the returned circuit")
     ax.set_title("(b) What survives an adaptive search")
-    fig.tight_layout()
+    ax.grid(axis="y", visible=False)
     fig.savefig(os.path.join(outdir, "fig_greedy.pdf"))
     plt.close(fig)
 
@@ -363,11 +413,49 @@ def main() -> None:
 
     build_all(syn, tiny, ioi, greedy, adaptive, args.gendir, MACROS)
 
+    # Any \MyXxx macro used in the manuscript but not produced by a finished
+    # experiment gets a loud placeholder, so a partial build still compiles and
+    # the missing numbers are impossible to overlook.
+    import glob as _glob
+    import re as _re
+
+    used = set()
+    for tex in _glob.glob(os.path.join(os.path.dirname(args.gendir), "*.tex")) + _glob.glob(
+        os.path.join(args.gendir, "*.tex")
+    ):
+        if os.path.basename(tex) == "numbers.tex":
+            continue  # would re-detect its own placeholders
+        used |= set(_re.findall(r"\\(My[A-Za-z]+)", open(tex).read()))
+    # stubs for \input{generated/...} targets whose experiment has not been run,
+    # and for figures that have not been produced, so the manuscript still builds
+    for tex in _glob.glob(os.path.join(os.path.dirname(args.gendir), "*.tex")):
+        body = open(tex).read()
+        for name in _re.findall(r"\\input\{generated/([A-Za-z_0-9]+)\}", body):
+            path = os.path.join(args.gendir, name + ".tex")
+            if not os.path.exists(path):
+                open(path, "w").write(
+                    "\\begin{center}\\textbf{?? " + name.replace("_", "\\_")
+                    + " not generated ??}\\end{center}\n"
+                )
+        for name in _re.findall(r"\\includegraphics\[[^\]]*\]\{\.\./figures/([A-Za-z_0-9]+)\.pdf\}", body):
+            path = os.path.join(args.figdir, name + ".pdf")
+            if not os.path.exists(path):
+                fg = plt.figure(figsize=(6.5, 1.0))
+                fg.text(0.5, 0.5, f"?? {name} not generated ??", ha="center", va="center")
+                fg.savefig(path)
+                plt.close(fg)
+
+    missing = sorted(used - set(MACROS))
     with open(os.path.join(args.gendir, "numbers.tex"), "w") as f:
         f.write("% auto-generated by experiments/make_figures.py -- do not edit\n")
         for k, v in sorted(MACROS.items()):
             f.write(f"\\newcommand{{\\{k}}}{{{v}}}\n")
-    print(f"wrote {len(MACROS)} macros to numbers.tex")
+        if missing:
+            f.write("% placeholders for experiments that have not been run\n")
+            for k in missing:
+                f.write(f"\\newcommand{{\\{k}}}{{\\textbf{{??}}}}\n")
+    print(f"wrote {len(MACROS)} macros to numbers.tex"
+          + (f"; {len(missing)} placeholders: {missing}" if missing else ""))
 
 
 if __name__ == "__main__":

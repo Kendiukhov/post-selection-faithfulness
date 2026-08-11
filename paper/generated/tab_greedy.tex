@@ -1,0 +1,23 @@
+% auto-generated
+\begin{table}[t]
+\centering
+\small
+\caption{\textbf{An adaptive search on GPT-2 small.} A greedy pruner removes
+attention heads one at a time using $n=200$ interventions,
+issuing 1,776 queries in total, and stops at
+11 heads. On its own search set the returned circuit scores
+0.917; on 1200 held-out interventions its true
+score is 0.916. Only the last three rows are valid after an
+adaptive search.}
+\label{tab:greedy}
+\begin{tabular}{p{0.44\linewidth}cp{0.36\linewidth}}
+\toprule
+what is reported & value & status \\
+\midrule
+naive bound on the search data & 0.860 & \textbf{invalid}: the circuit was chosen on these interventions \\
+uniform over the $10^{18}$ circuits the search could have reached & 0.601 & valid, but vacuous from the search data alone \\
+held-out, 200 fresh interventions & 0.866 & valid \\
+held-out, 1200 fresh interventions & 0.894 & valid \\
+\bottomrule
+\end{tabular}
+\end{table}

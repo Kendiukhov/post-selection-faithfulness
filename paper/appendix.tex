@@ -30,18 +30,22 @@ selection rule, so the same bound holds for its expectation. \hfill$\square$
 Under the stated model $\sqrt n(\thetahat_n(c)-\theta_0)/\sigma = N_c$ with
 $N_1,\dots,N_m$ i.i.d.\ standard normal, and the arg-max selects the largest
 $N_c$, so $\thetahat_n(\hchat)-\theta(\hchat)=(\sigma/\sqrt n)\max_c N_c$
-exactly. For i.i.d.\ standard normals the classical Sudakov-type lower bound
-\citep[Thm.~13.4 and Exercise~13.6]{boucheron2013concentration} gives
-$\Ex\max_{j\le m}N_j\ge c_0\sqrt{\log m}$, and the largest constant for which this
-holds at every $m\ge2$ is $c_0=1/\sqrt{\pi\log 2}\approx0.6777$: the ratio
-$\Ex[\max_{j\le m}N_j]/\sqrt{\log m}$ is minimised at $m=2$, where
-$\Ex\max = 1/\sqrt\pi$ exactly, and increases thereafter (we verified this
-numerically up to $m=10^5$; the ratio is $0.678$ at $m=2$, $0.874$ at $m=4$ and
-$1.269$ at $m=10^4$). Combining with the sub-Gaussian upper bound
-$\Ex\max_{j\le m}N_j\le\sqrt{2\log m}$ gives the claim. The maximum is in fact
-asymptotically $\sqrt{2\log m}$ \citep[Exercise~2.17]{boucheron2013concentration},
-so the upper bound of Proposition~\ref{prop:upper} is sharp in this model.
-\hfill$\square$
+exactly. For i.i.d.\ standard normals,
+$\Ex\max_{j\le m}N_j\ge \tfrac{1}{\sqrt2}\sqrt{\log m}$
+\citep[Exercise~13.6]{boucheron2013concentration}, used there in the proof of
+Sudakov's minoration; combined with the sub-Gaussian upper bound
+$\Ex\max_{j\le m}N_j\le\sqrt{2\log m}$ this gives the claim. \hfill$\square$
+
+\begin{remark}[The restriction to $m\ge3$]
+The bound with constant $1/\sqrt2$ fails at $m=2$, where
+$\Ex\max_{j\le 2}N_j = 1/\sqrt\pi = 0.5642$ exactly while
+$\tfrac1{\sqrt2}\sqrt{\log 2}=0.5887$. The ratio
+$\Ex[\max_{j\le m}N_j]/\sqrt{\log m}$ is minimised at $m=2$ and increases
+thereafter, so the largest constant valid for every $m\ge2$ is
+$1/\sqrt{\pi\log 2}\approx0.6777$; we computed the ratio numerically up to
+$m=10^5$ ($0.678$ at $m=2$, $0.807$ at $m=3$, $0.874$ at $m=4$, $1.269$ at
+$m=10^4$). Nothing in the paper depends on the case $m=2$.
+\end{remark}
 
 \subsection{Proposition~\ref{prop:naivecov}}
 
@@ -89,6 +93,15 @@ bites in practice: a hypothesis scoring exactly $1$ on every instance has
 $\sigmahat(c)=0$. We floor $\sigmahat$ at $10^{-4}$; in every experiment reported
 here we also verify coverage empirically, which is the ultimate check.
 
+\paragraph{(e).} The conditional interval is the polyhedral construction of
+\citet{lee2016exact}; our implementation restricts the polyhedron to the
+comparisons the investigator actually made (so that a size-constrained arg-max is
+handled correctly). The hybrid intersects the conditional interval with a
+two-sided simultaneous band at level $\beta$ and then inverts at level
+$(\alpha-\beta)/(1-\beta)$; because we use a simultaneous band rather than the
+exact projection region of \citet{andrews2024inference}, the result is
+conservative.
+
 \paragraph{(d).} Conditionally on the selection half, $\hchat$ is fixed and the
 evaluation half is an i.i.d.\ sample independent of it, so the $m=1$ bound
 applies conditionally and therefore marginally.
@@ -109,9 +122,15 @@ vector gives the influence contribution quoted in Section~\ref{sec:ratio}:
 -\hat F(c)\,\frac{\big(\mathrm{LD}_i(\text{full})-\hat f\big)-\big(\mathrm{LD}_i(\emptyset)-\hat b\big)}{\hat f-\hat b}.
 \]
 The delta method gives $\hat F(c)-F(c)=n^{-1}\sum_i\psi_i(c)+o_P(n^{-1/2})$
-uniformly over $c$ under bounded fourth moments, so the multiplier bootstrap
-applied to $\psi$ yields a simultaneous band exactly as in
-Section~\ref{sec:methods}(c).
+uniformly over $c$ under bounded fourth moments. The band we report resamples
+the instances and recomputes $F$, its influence function and its standard error
+in every replicate --- the ratio analogue of the bootstrap-$t$ of
+Section~\ref{sec:methods}(c). Because
+$\psi_i(c) = \big(u_i(c) - F(c)\,v_i\big)/\bar v$ with
+$u_i(c)=\mathrm{LD}_i(c)-\mathrm{LD}_i(\emptyset)$ and
+$v_i=\mathrm{LD}_i(\text{full})-\mathrm{LD}_i(\emptyset)$, each replicate needs
+only three weighted sums of the $n\times m$ matrices $u$, $u^2$ and $uv$, so the
+whole band costs three mat-muls per batch of replicates.
 
 \paragraph{A finite-sample alternative.}
 If the per-instance logit differences are known to lie in $[\ell,u]$, one can

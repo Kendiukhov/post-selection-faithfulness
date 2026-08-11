@@ -2951,5 +2951,117 @@
   ],
   "R": 400,
   "alpha": 0.05
+ },
+ "D": {
+  "rows": [
+   {
+    "m": 60,
+    "n": 400,
+    "rho": 0.0,
+    "theta": 0.75,
+    "coverage_bootstrap_t": 0.95,
+    "coverage_fixed_sigma": 0.886,
+    "width_bootstrap_t": 0.06804663857501748,
+    "width_fixed_sigma": 0.0626931162687711
+   },
+   {
+    "m": 60,
+    "n": 400,
+    "rho": 0.6,
+    "theta": 0.75,
+    "coverage_bootstrap_t": 0.944,
+    "coverage_fixed_sigma": 0.892,
+    "width_bootstrap_t": 0.06625427587622397,
+    "width_fixed_sigma": 0.061069116067414
+   },
+   {
+    "m": 300,
+    "n": 400,
+    "rho": 0.0,
+    "theta": 0.75,
+    "coverage_bootstrap_t": 0.966,
+    "coverage_fixed_sigma": 0.864,
+    "width_bootstrap_t": 0.07715768694897554,
+    "width_fixed_sigma": 0.07005119703571792
+   },
+   {
+    "m": 60,
+    "n": 1500,
+    "rho": 0.0,
+    "theta": 0.75,
+    "coverage_bootstrap_t": 0.942,
+    "coverage_fixed_sigma": 0.91,
+    "width_bootstrap_t": 0.03500776799979453,
+    "width_fixed_sigma": 0.033727779162679626
+   },
+   {
+    "m": 60,
+    "n": 400,
+    "rho": 0.0,
+    "theta": 0.95,
+    "coverage_bootstrap_t": 0.966,
+    "coverage_fixed_sigma": 0.576,
+    "width_bootstrap_t": 0.03653415773570822,
+    "width_fixed_sigma": 0.02515315631968627
+   },
+   {
+    "m": 60,
+    "n": 400,
+    "rho": 0.0,
+    "theta": 0.5,
+    "coverage_bootstrap_t": 0.966,
+    "coverage_fixed_sigma": 0.954,
+    "width_bootstrap_t": 0.07869089933501756,
+    "width_fixed_sigma": 0.07783176416674066
+   }
+  ],
+  "R": 500,
+  "alpha": 0.05
+ },
+ "E": {
+  "rows": [
+   {
+    "G": 10,
+    "n": 400,
+    "per_cluster": 40,
+    "icc_design": 0.5,
+    "coverage_cluster": 0.9333333333333333,
+    "coverage_iid": 0.6266666666666667
+   },
+   {
+    "G": 15,
+    "n": 600,
+    "per_cluster": 40,
+    "icc_design": 0.5,
+    "coverage_cluster": 0.91,
+    "coverage_iid": 0.5633333333333334
+   },
+   {
+    "G": 25,
+    "n": 1000,
+    "per_cluster": 40,
+    "icc_design": 0.5,
+    "coverage_cluster": 0.9233333333333333,
+    "coverage_iid": 0.61
+   },
+   {
+    "G": 50,
+    "n": 2000,
+    "per_cluster": 40,
+    "icc_design": 0.5,
+    "coverage_cluster": 0.9233333333333333,
+    "coverage_iid": 0.6566666666666666
+   },
+   {
+    "G": 100,
+    "n": 4000,
+    "per_cluster": 40,
+    "icc_design": 0.5,
+    "coverage_cluster": 0.9566666666666667,
+    "coverage_iid": 0.6566666666666666
+   }
+  ],
+  "R": 300,
+  "alpha": 0.05
  }
 }

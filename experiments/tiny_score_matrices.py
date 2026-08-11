@@ -90,15 +90,21 @@ def main() -> None:
     ap.add_argument("--N", type=int, default=60000)
     ap.add_argument("--batch", type=int, default=10000)
     ap.add_argument("--which", default="ABC")
+    ap.add_argument("--tags", default="", help="comma-separated subset of tags to recompute")
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
     device = torch.device(args.device)
-    meta = {}
+    only_tags = {t.strip() for t in args.tags.split(",") if t.strip()}
+    want_tag = lambda t: (not only_tags) or (t in only_tags)  # noqa: E731
+    meta_path = os.path.join(args.out, "meta.json")
+    meta = json.load(open(meta_path)) if os.path.exists(meta_path) else {}
 
     if "A" in args.which:
         print("[TT-A] hierarchical equality -- alignment search for V1")
         task = EqualityTask(n_symbols=10)
         for tag, fn in [("tt_a", "tt_a_equality.pt"), ("tt_a_iit", "tt_a_equality_iit.pt")]:
+            if not want_tag(tag):
+                continue
             model, ck = load(os.path.join(args.models, fn), device)
             S, hyps = run_alignment(
                 model, task, "V1", list(task.label_tokens), args.N, device,
@@ -114,7 +120,7 @@ def main() -> None:
                 meta[tag]["planted"] = ck["planted"]
             del model
 
-    if "B" in args.which:
+    if "B" in args.which and want_tag("tt_b"):
         print("[TT-B] induction -- component-subset circuits")
         itask = InductionTask(n_symbols=40, block=8)
         model, ck = load(os.path.join(args.models, "tt_b_induction.pt"), device)
@@ -167,6 +173,8 @@ def main() -> None:
         print("[TT-C] modular arithmetic -- alignment search for S1")
         atask = ArithmeticTask(modulus=10)
         for tag, fn in [("tt_c", "tt_c_arithmetic.pt"), ("tt_c_iit", "tt_c_arithmetic_iit.pt")]:
+            if not want_tag(tag):
+                continue
             path = os.path.join(args.models, fn)
             if not os.path.exists(path):
                 print(f"  (skipping {tag}: {path} not found)")
@@ -186,7 +194,7 @@ def main() -> None:
                 meta[tag]["planted"] = ck["planted"]
             del model
 
-    with open(os.path.join(args.out, "meta.json"), "w") as f:
+    with open(meta_path, "w") as f:
         json.dump(meta, f, indent=2)
     print(json.dumps(meta, indent=2))
 

@@ -19,7 +19,7 @@ from psf import bootstrap_max_lcb, effective_num_hypotheses
 # S[i, c] = per-instance faithfulness score of circuit hypothesis c on intervention i
 S = np.load("scores.npy")            # shape (n, m)
 
-lcb, qhat = bootstrap_max_lcb(S, alpha=0.05, return_q=True)
+lcb, qhat = bootstrap_max_lcb(S, alpha=0.05, return_q=True)   # empirical bootstrap-t
 chat = int(S.mean(0).argmax())       # however you picked your circuit
 
 print(f"reported faithfulness : {S.mean(0)[chat]:.3f}")
@@ -38,9 +38,10 @@ entire reported size/faithfulness frontier at once.
 ```
 src/psf/                library (pure NumPy/SciPy for the statistics; PyTorch only for the models)
   bounds.py             every lower confidence bound: naive, Hoeffding/empirical-Bernstein
-                        union, Occam (prior-weighted), multiplier-bootstrap simultaneous band,
-                        wild cluster bootstrap, sample splitting, selective (polyhedral) and
-                        hybrid intervals, betting bound
+                        union, Occam (prior-weighted), empirical bootstrap-t simultaneous
+                        band (+ finite-sample-floored variant), wild cluster bootstrap-t,
+                        sample splitting, selective (polyhedral) and hybrid intervals,
+                        betting bound
   functional.py         the same machinery for metrics that are ratios of means
                         (normalised logit difference recovered), via influence functions
   evaluate.py           replicate driver: coverage / certified value for any score matrix
@@ -66,30 +67,59 @@ bash scripts/run_all.sh          # ~5 GPU-hours on one consumer accelerator
 cd paper && latexmk -pdf main.tex
 ```
 
-The expensive steps are the two GPU passes that build **score matrices**
-(`ioi_score_matrix.py`, `tiny_score_matrices.py`). Everything statistical runs
-afterwards on the cached matrices and takes minutes on a CPU. `run_all.sh` skips
-any stage whose output already exists.
+The expensive steps are the GPU passes that build **score matrices**
+(`ioi_score_matrix.py`, `tiny_score_matrices.py`, `ioi_greedy.py`). Everything
+statistical runs afterwards on the cached matrices and takes minutes on a CPU.
+`run_all.sh` skips any stage whose output already exists.
+
+**The cached score matrices are committed** (`results/ioi/ioi_scores.npz` and
+friends), so every statistical result in the paper — every coverage number, every
+certified bound, every figure — can be reproduced without a GPU:
+
+```bash
+python experiments/ioi_analysis.py --scores results/ioi/ioi_scores.npz --out results/ioi
+python experiments/make_figures.py
+```
+
+The one exception is `results/tiny/tt_b_scores.npz` (57 MB), which is excluded
+for size; re-run `tiny_score_matrices.py --which B` to rebuild it.
+
+### Set `OPENBLAS_NUM_THREADS=1`
+
+On a busy machine a multi-threaded BLAS can make the small mat-muls in the
+bootstrap *a thousand times* slower than the single-threaded version, because the
+thread pool spin-waits. Every script in `experiments/` pins the pools to one
+thread before importing NumPy; if you call the library directly, do the same.
 
 ### Design choice that makes the numbers exact
 
-Every coverage number in the paper is *exact*, not estimated: we cache a large
-pool of per-instance scores and then **treat that pool as the population**,
-drawing analysis samples i.i.d. from it. The true faithfulness of every
-hypothesis is the pooled column mean, known without error, so "coverage" is a
-Monte-Carlo estimate of a probability whose target is known exactly rather than
-a comparison against a noisy oracle.
+We cache a large pool of per-instance scores and then **treat that pool as the
+population**, drawing analysis samples i.i.d. from it. The true faithfulness of
+every hypothesis is then the pooled column mean, known without error, so a
+measured coverage carries only Monte-Carlo error over replications — it is not
+contaminated by uncertainty about the truth, which is the usual obstacle to
+measuring coverage on a real model.
+
+### One implementation detail worth knowing
+
+The simultaneous band is an **empirical bootstrap-t**: the standard deviation is
+recomputed inside every resample. The textbook multiplier bootstrap, which holds
+it fixed, under-covers badly for binary faithfulness scores — 58% instead of 95%
+at θ = 0.95 in our simulations — because the sample mean and the sample standard
+deviation of a Bernoulli variable are dependent. See
+`experiments/synthetic_study.py` part D and the corresponding test.
 
 ## Which bound should I use?
 
 | situation | use | why |
 |---|---|---|
 | class fixed in advance, enumerable | `bootstrap_max_lcb` | tightest; adapts to the strong correlation between overlapping circuits; certifies every hypothesis at once |
+| ...and some hypotheses may be perfect on the sample | `floored_bootstrap_lcb` | the band degenerates for a zero-variance column; this uses the finite-sample bound there and the band elsewhere, each at $\alpha/2$ |
 | class is a power set of components | `occam_lcb` with `size_stratified_log_prior` | handles $2^{144}$ circuits; small circuits are cheaper to certify |
 | want a finite-sample, assumption-free guarantee | `union_lcb` | Hoeffding ∨ empirical Bernstein, each at $\alpha/2$ |
 | search was adaptive (greedy, gradient-based, human-in-the-loop) | `split_lcb`, or hold out fresh interventions | uniformity over the *reachable* set is usually vacuous |
 | instances come from a few templates and you want to generalise to new ones | `cluster_bootstrap_max_lcb` | resamples templates, not prompts |
-| metric is a ratio of means (logit difference recovered) | `functional.influence_band` | delta method + the same bootstrap |
+| metric is a ratio of means (logit difference recovered) | `functional.ratio_band` | recomputes the ratio, its influence function and its standard error in every resample |
 
 `conditional_winner_lcb` / `hybrid_winner_lcb` implement selective inference
 conditional on the arg-max. They are included for completeness; the conditional
@@ -109,7 +139,8 @@ this paper is about).
 
 ## Citation
 
-The paper is included in `paper/`. A `CITATION.cff` will be added on release.
+The compiled paper is `paper/main.pdf` and its source is in `paper/`. Machine
+readable metadata is in `CITATION.cff`.
 
 ## License
 

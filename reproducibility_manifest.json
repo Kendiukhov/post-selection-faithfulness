@@ -1,0 +1,78 @@
+{
+  "python": "3.11.9",
+  "platform": "macOS-26.3-arm64-arm-64bit",
+  "machine": "arm64",
+  "numpy": "1.26.4",
+  "scipy": "1.16.3",
+  "torch": "2.11.0",
+  "transformers": "4.37.1",
+  "matplotlib": "3.10.8",
+  "accelerator": "mps",
+  "git_commit": "232cd371be69d8425a5d13e695123ba4dd923e1e",
+  "artifacts": {
+    "results/models/summary.json": {
+      "bytes": 334,
+      "sha256_16": "735c6c136ec79ad6"
+    },
+    "results/tiny/meta.json": {
+      "bytes": 2268,
+      "sha256_16": "f1978c05d5a5340c"
+    },
+    "results/tiny/tiny_analysis.json": {
+      "bytes": 218189,
+      "sha256_16": "b4a10a4a76a99e3c"
+    },
+    "results/ioi/meta.json": {
+      "bytes": 166,
+      "sha256_16": "07acaf698ea03878"
+    },
+    "results/ioi/ioi_analysis.json": {
+      "bytes": 54063,
+      "sha256_16": "2d9a0bde2b45e9d6"
+    },
+    "results/ioi/greedy_meta.json": {
+      "bytes": 192,
+      "sha256_16": "24ac277f10f7963d"
+    },
+    "results/ioi/greedy_analysis.json": {
+      "bytes": 3577,
+      "sha256_16": "eb64ca28c4e67527"
+    },
+    "results/synthetic/synthetic.json": {
+      "bytes": 71782,
+      "sha256_16": "6017b879848e87bd"
+    },
+    "results/adaptive/adaptive.json": {
+      "bytes": 15180,
+      "sha256_16": "5f00d2bae92cb977"
+    },
+    "paper/generated/numbers.tex": {
+      "bytes": 4314,
+      "sha256_16": "4e2c3b8f423d24b8"
+    },
+    "results/tiny/tt_a_scores.npz": {
+      "bytes": 1248191,
+      "sha256_16": "c0f7de05db2df76d"
+    },
+    "results/tiny/tt_a_iit_scores.npz": {
+      "bytes": 944296,
+      "sha256_16": "38a88d8b81afa63b"
+    },
+    "results/tiny/tt_b_scores.npz": {
+      "bytes": 59395066,
+      "sha256_16": "19ce14e0cf2464f6"
+    },
+    "results/tiny/tt_c_scores.npz": {
+      "bytes": 438601,
+      "sha256_16": "8e681e81ca9b4324"
+    },
+    "results/ioi/ioi_scores.npz": {
+      "bytes": 17305677,
+      "sha256_16": "f2fe2777511c6998"
+    },
+    "results/ioi/ioi_greedy.npz": {
+      "bytes": 249965,
+      "sha256_16": "d618520301bb7245"
+    }
+  }
+}

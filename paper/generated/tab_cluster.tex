@@ -1,0 +1,27 @@
+% auto-generated
+\begin{table}[t]
+\centering
+\small
+\caption{\textbf{When the target population is new \emph{templates}.}
+Prompts are drawn template-by-template --- the templates themselves are
+resampled --- which is the honest model of how an IOI evaluation set is produced.
+The selection is the best circuit of at most eight heads (the unconstrained
+arg-max is perfect on every sampled prompt, and its degeneracy would swamp the
+comparison). The finite-sample union bounds assume i.i.d.\ instances and are
+therefore omitted: they are not valid under this sampling scheme. Median
+intra-template correlation of per-instance scores: 0.055
+over $G=30$ templates, giving a design effect of
+4.6 at $n=2000$.}
+\label{tab:cluster}
+\begin{tabular}{lcccccc}
+\toprule
+& \multicolumn{3}{c}{coverage} & \multicolumn{3}{c}{certified $L(\hat c)$} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7}
+method & $n=500$ & $n=1000$ & $n=2000$ & $n=500$ & $n=1000$ & $n=2000$ \\
+\midrule
+naive $\pm z\,\mathrm{SE}$ & 0.814 & 0.760 & 0.726 & 0.765 & 0.771 & 0.777 \\
+bootstrap simultaneous band & 0.997 & 0.997 & 0.954 & 0.695 & 0.727 & 0.750 \\
+cluster bootstrap band & 1.000 & 0.997 & 1.000 & 0.678 & 0.695 & 0.706 \\
+\bottomrule
+\end{tabular}
+\end{table}

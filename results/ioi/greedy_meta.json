@@ -1,0 +1,11 @@
+{
+  "n_search": 200,
+  "n_eval": 1200,
+  "n_queries": 1776,
+  "pool_size": 60,
+  "path_len": 51,
+  "stop_at": 10,
+  "minutes": 13.626150818665822,
+  "n_templates_packed": 12,
+  "seq_len": 15
+}

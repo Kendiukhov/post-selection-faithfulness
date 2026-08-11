@@ -620,7 +620,7 @@ def _wild_cluster_t_draws(
     n_boot: int,
     multiplier: str,
     seed: int,
-    var_floor: float,
+    se_floor: float,
     batch: int = 256,
 ) -> np.ndarray:
     """Wild cluster bootstrap-*t* draws of the studentised mean deviation.
@@ -651,7 +651,7 @@ def _wild_cluster_t_draws(
         D = (xi @ Cs32) / n  # (b, m)
         T = xi[:, :, None] * Cs32[None, :, :]  # (b, G, m)
         R = T - ng[None, :, None] * D[:, None, :]
-        se = np.sqrt(np.maximum((R ** 2).sum(axis=1) / (n ** 2), var_floor))
+        se = np.maximum(np.sqrt((R ** 2).sum(axis=1) / (n ** 2)), se_floor)
         draws[done : done + b] = np.max(D / se, axis=1)
         done += b
     return draws
@@ -701,10 +701,10 @@ def cluster_bootstrap_max_lcb(
     multiplier: str = "rademacher",
     seed: int = 0,
     small_g_correction: bool = True,
-    var_floor: float = 1e-12,
+    var_floor: float = 1.0,
     return_q: bool = False,
 ):
-    """Cluster-robust simultaneous lower band (wild cluster bootstrap).
+    """Cluster-robust simultaneous lower band (wild cluster bootstrap-*t*).
 
     Intervention instances in mechanistic interpretability are rarely i.i.d.:
     the standard IOI dataset, for example, is generated from a handful of
@@ -732,10 +732,15 @@ def cluster_bootstrap_max_lcb(
     np.add.at(Cs, inv, R)
     # cluster-robust variance of the mean: (1/n^2) sum_g (sum_{i in g} r_i)^2
     var_mean = (Cs ** 2).sum(axis=0) / (n ** 2)
-    se = np.sqrt(np.maximum(var_mean, var_floor))
+    # Same floor as the i.i.d. band: a hypothesis that is perfect on every
+    # sampled instance has zero cluster-robust variance too, and without a floor
+    # its interval would have zero width.  Flooring the standard error at 1/n
+    # gives it width qhat/n, the order of the exact "rule of three".
+    se_floor = np.sqrt(var_floor) / n
+    se = np.maximum(np.sqrt(np.maximum(var_mean, 0.0)), se_floor)
 
     ng = np.bincount(inv, minlength=G).astype(np.float64)
-    draws = _wild_cluster_t_draws(Cs, ng, n, n_boot, multiplier, seed, var_floor)
+    draws = _wild_cluster_t_draws(Cs, ng, n, n_boot, multiplier, seed, se_floor)
     qhat = float(np.quantile(draws, 1 - alpha))
     if small_g_correction and G > 1:
         infl = stats.t.ppf(1 - alpha, df=G - 1) / stats.norm.ppf(1 - alpha)
@@ -759,11 +764,22 @@ def multiplicity_factor(
     statistic at finite ``n``, which has nothing to do with multiplicity.
     """
     X = np.asarray(S, dtype=np.float64)
-    chat = int(X.mean(axis=0).argmax())
-    dmax, dref = _bootstrap_t_draws(X, n_boot, seed, ref_col=chat)
+    n = X.shape[0]
+    var = X.var(axis=0, ddof=1)
+    # Reference column for the marginal critical value: any *pre-specified*
+    # hypothesis would do, but it must not be one whose sample variance is
+    # degenerate, or the marginal quantile is zero and the ratio is meaningless.
+    ok = np.flatnonzero(var > 1.0 / n)
+    if ok.size == 0:
+        ref = int(np.argmax(var))
+    else:
+        ref = int(ok[np.argsort(var[ok])[ok.size // 2]])
+    dmax, dref = _bootstrap_t_draws(X, n_boot, seed, ref_col=ref)
     q_max = float(np.quantile(dmax, 1 - alpha))
     q_marg = float(np.quantile(dref, 1 - alpha))
-    return q_max, q_marg, q_max / max(q_marg, 1e-12)
+    if not np.isfinite(q_marg) or q_marg < 0.5:
+        q_marg = float(stats.norm.ppf(1 - alpha))
+    return q_max, q_marg, q_max / q_marg
 
 
 def effective_num_hypotheses(

@@ -89,7 +89,8 @@ def main() -> None:
         {"name": "naive bound on the search data", "lcb": F_s - z * se_s,
          "note": "\\textbf{invalid}: the circuit was chosen on these interventions",
          "color": "#B3282D"},
-        {"name": f"uniform over all {int(np.exp(min(log_reach, 700))):.0e} reachable circuits".replace("e+", "e"),
+        {"name": ("uniform over the $10^{%d}$ circuits the search could have reached"
+                  % round(log_reach / np.log(10))),
          "lcb": F_s - q_reach * se_s,
          "note": "valid, but vacuous from the search data alone", "color": "#8C8C8C"},
         {"name": f"held-out, {sub.size} fresh interventions", "lcb": F_sub - z * se_sub,

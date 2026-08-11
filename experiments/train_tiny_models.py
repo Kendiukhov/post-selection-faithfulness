@@ -181,8 +181,10 @@ def main() -> None:
         # the network can then compute a+b there and add c in the last layer, which
         # is a natural algorithm for it to implement.
         planted = [PlantedAlignment("S1", "resid_post.1", 3, tuple(range(0, 32)))]
+        # a lower learning rate than the standard run: with the interchange loss
+        # attached, 3e-3 reaches zero loss quickly but destabilises later on
         atc = TrainConfig(
-            steps=max(args.steps, 20000), batch_size=512, lr=3e-3, seed=4, device=str(device)
+            steps=max(args.steps, 8000), batch_size=512, lr=1e-3, seed=4, device=str(device)
         )
         amodel, ahist = train_label_task(
             ar, ar_cfg, atc, list(range(ar.modulus)), iit=planted, iit_weight=2.0

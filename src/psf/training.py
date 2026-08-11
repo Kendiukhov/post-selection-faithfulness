@@ -94,8 +94,18 @@ def train_label_task(
             cf = task.counterfactual_label(toks, src, pa.variable)
             cf_idx = _cf_index(task, cf, label_token_ids)
             st = torch.tensor(src, device=device)
-            _, cache = model.run_with_cache(st, [pa.site])
-            srcact = cache[pa.site]
+            # Record the source activation *without* detaching: the network has to
+            # receive gradient through the source run as well, otherwise it is
+            # never asked to make the planted subspace encode the variable --
+            # only to react to whatever happens to be there.
+            store: dict = {}
+
+            def _record(name, t, store=store):
+                store[name] = t
+                return t
+
+            model(st, {pa.site: _record})
+            srcact = store[pa.site]
             dims = torch.tensor(pa.dims, device=device, dtype=torch.long)
 
             def hook(name, t, srcact=srcact, dims=dims, p=pa.position):

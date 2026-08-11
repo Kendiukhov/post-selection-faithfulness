@@ -1,0 +1,36 @@
+% auto-generated
+\begin{table}[t]
+\centering
+\small
+\caption{\textbf{Exact coverage on tiny transformers with known algorithms.}
+All four networks reach $100\%$ task accuracy. Because the cached pool of
+$60{,}000$ interventions is treated as the population, the true faithfulness of
+every hypothesis is known exactly and these coverages are exact, not estimated.
+The naive interval loses coverage wherever the class contains near-ties; the
+post-selection-valid bounds hold everywhere. Nominal level $0.95$.}
+\label{tab:tiny}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{llccccccccc}
+\toprule
+& & & \multicolumn{4}{c}{coverage} & \multicolumn{3}{c}{certified $L(\hat c)$} \\
+\cmidrule(lr){4-7} \cmidrule(lr){8-10}
+setting & $n$ & optimism & naive & boot & union & split & boot & union & split \\
+\midrule
+\multirow{3}{*}{TT-A equality, full class} & 250 & $+-0.000$ & 0.54 & 1.00 & 1.00 & 0.31 & 0.983 & 0.887 & 0.992 \\
+ & 1000 & $+-0.000$ & 0.82 & 1.00 & 1.00 & 0.77 & 0.991 & 0.965 & 0.994 \\
+ & 4000 & $+0.000$ & 0.91 & 1.00 & 1.00 & 0.84 & 0.994 & 0.987 & 0.995 \\
+\midrule
+\multirow{3}{*}{TT-A equality, localised} & 250 & $+0.010$ & 0.90 & 0.99 & 1.00 & 0.95 & 0.562 & 0.514 & 0.568 \\
+ & 1000 & $+0.003$ & 0.91 & 0.99 & 1.00 & 0.94 & 0.603 & 0.579 & 0.608 \\
+ & 4000 & $+0.001$ & 0.92 & 1.00 & 1.00 & 0.95 & 0.625 & 0.612 & 0.629 \\
+\midrule
+\multirow{3}{*}{TT-C arithmetic, null class} & 250 & $+0.030$ & 0.67 & 0.97 & 1.00 & 0.99 & 0.089 & 0.006 & 0.061 \\
+ & 1000 & $+0.012$ & 0.76 & 0.99 & 1.00 & 0.97 & 0.105 & 0.064 & 0.096 \\
+ & 4000 & $+0.003$ & 0.87 & 0.99 & 1.00 & 0.97 & 0.114 & 0.099 & 0.113 \\
+\midrule
+\multirow{3}{*}{TT-B induction, size $\le 2$} & 250 & $+0.001$ & 0.85 & 1.00 & 1.00 & 0.90 & 0.982 & 0.895 & 0.990 \\
+ & 1000 & $+0.000$ & 0.85 & 1.00 & 1.00 & 0.90 & 0.991 & 0.968 & 0.992 \\
+ & 4000 & $+0.000$ & 0.91 & 1.00 & 1.00 & 0.94 & 0.993 & 0.987 & 0.993 \\
+\bottomrule
+\end{tabular}}
+\end{table}

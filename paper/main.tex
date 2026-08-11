@@ -70,10 +70,12 @@ covers \MyIOINaiveCov{} of the time; the bootstrap-$t$ band covers
 \MyIOIBootCov{} and still certifies faithfulness of \MyIOIBootLCB{}, against a
 (inflated) naive point estimate of \MyIOINaivePoint{}. The correction is
 therefore cheap --- but only if two other things are done right, and both are
-usually not. First, if the target population is new prompt \emph{templates}
-rather than new fills of the same ones, the effective sample size shrinks by a
-factor of \MyIOIDeff{}. Second, if the search was adaptive, no correction on the
-search data is usable and interventions must be held out. We release a library
+usually not. First, if the target population is new prompt \emph{templates} rather than new
+fills of the same ones, the effective sample size shrinks by a factor of
+\MyIOIDeff{} and the naive interval's coverage falls to \MyClusterNaiveCov{}
+\emph{and keeps falling as more prompts are added}. Second, if the search was adaptive, a bound uniform over the circuits the search
+could have reached is valid but vacuous, and interventions must be held out
+instead. We release a library
 that turns any per-instance faithfulness score into a certificate.
 \end{abstract}
 
@@ -261,7 +263,7 @@ independent across hypotheses, and $\theta(c)\equiv\theta_0$. Then for
 $\hchat=\argmax_c\thetahat_n(c)$,
 \[
 \Ex\big[\thetahat_n(\hchat)-\theta(\hchat)\big] \;=\; \frac{\sigma}{\sqrt n}\,\Ex\Big[\max_{j\le m} N_j\Big]
-\;\ge\; \frac{\sigma}{\sqrt{\pi\log 2}}\sqrt{\frac{\log m}{n}},\qquad m\ge 2 .
+\;\ge\; \frac{\sigma}{\sqrt 2}\sqrt{\frac{\log m}{n}},\qquad m\ge 3 .
 \]
 \end{proposition}
 
@@ -389,10 +391,16 @@ to pay the same price.
 
 Dividing by the marginal critical value matters: $\hat q_{1-\alpha}$ also absorbs
 the finite-sample non-normality of the studentised statistic, which has nothing
-to do with searching. Reporting $\kappa$ and $m_{\mathrm{eff}}$ next to
-$|\Cclass|$ tells a reader how much multiplicity a search really incurred. On IOI
-we measure $\kappa=\MyIOIKappa{}$, i.e.\ $m_{\mathrm{eff}}=\MyIOIMeff{}$ against
-a nominal $|\Cclass|=\MyIOIm{}$.
+to do with searching. The natural comparison for $\kappa$ is the Bonferroni
+factor $z_{1-\alpha/m}/z_{1-\alpha}$ that a correction over $m$ \emph{independent}
+hypotheses would pay. In our simulations (Table~\ref{tab:synth}) the two are
+close when hypotheses are independent and $\kappa$ falls well below Bonferroni
+once they are correlated --- at $|\Cclass|=2000$ and correlation $0.9$,
+$\kappa=1.99$ against a Bonferroni factor of $2.47$. $\kappa$ can also
+\emph{exceed} the Bonferroni factor, and does so on IOI, where many circuits are
+perfect on every sampled instance and the studentised maximum is correspondingly
+heavy-tailed; that is a finite-sample effect, not multiplicity, and it is the
+situation the floored variant of paragraph~(c) is for.
 
 \paragraph{(d) Sample splitting (\textsc{split}).}
 Select on a fraction $f$ of the instances and bound on the rest. Valid for
@@ -400,11 +408,13 @@ arbitrary and \emph{adaptive} selection, and free of any dependence on
 $|\Cclass|$. We report two versions: \textsc{split} uses a $t$-interval on the
 held-out half, which is the like-for-like comparison with the (also asymptotic)
 bootstrap band, and \textsc{split-eb} uses the finite-sample bound of (a) at
-$m=1$. Comparing half-widths of the asymptotic versions, the band is tighter
-than a $50/50$ split exactly when $\kappa\le\sqrt2$, i.e.\ when
-$m_{\mathrm{eff}}\lesssim 100$ at $\alpha=0.05$. Splitting also degrades the
-selection itself, because $\hchat$ is chosen from half the instances, so the fair
-comparison is again the certified value $L(\hchat)$.
+$m=1$. Comparing half-widths of the two asymptotic procedures, the band is narrower than
+a $50/50$ split exactly when $\kappa\le\sqrt 2$, i.e.\ when
+$m_{\mathrm{eff}}\lesssim 5$ at $\alpha=0.05$. That comparison is not the whole
+story, because splitting also degrades the \emph{selection}: $\hchat$ is chosen
+from half the instances, so its true faithfulness is lower. The net effect has to
+be measured, and it goes the band's way whenever no hypothesis is clearly best
+and splitting's way when one is (Table~\ref{tab:synth}).
 
 \paragraph{(e) Selective intervals for the winner (\textsc{cond}, \textsc{hybrid}).}
 Conditioning on the event $\{\argmax=\hchat\}$ makes $\thetahat_n(\hchat)$ a
@@ -412,9 +422,11 @@ truncated normal \citep{lee2016exact,andrews2024inference}, which can be inverte
 for a conditionally valid bound. We implement it, and report that it is
 informative only when the winner wins clearly; with several near-tied hypotheses
 --- the normal situation in circuit search --- the truncation point approaches
-the observed value and the interval degenerates. The hybrid construction of
-\citet{andrews2024inference} repairs this. We include both for completeness and
-recommend \textsc{boot-max} as the default.
+the observed value and the interval degenerates. The hybrid construction of \citet{andrews2024inference} repairs this; ours is a
+conservative variant of it (we intersect with a two-sided simultaneous band
+rather than the exact projection region, so the level is at least $1-\alpha$ and
+in practice somewhat above). We include both for completeness and recommend
+\textsc{boot-max} as the default.
 
 \begin{remark}[Randomised selection is not a free lunch]
 For a Gaussian mean vector one can select on $U=\thetahat+\tau\xi$ and infer from
@@ -475,7 +487,7 @@ With $G$ templates, $n/G$ prompts each and intra-template correlation $\rho_I$,
 the variance of $\thetahat$ under template-level sampling is inflated by Kish's
 design effect $\mathrm{DEFF}=1+(n/G-1)\rho_I$ \citep{kish1965survey}, so the effective sample size is
 $n/\mathrm{DEFF}$ and saturates at $G/\rho_I$ however many prompts are generated.
-For the simultaneous band we replace the i.i.d.\ multiplier bootstrap by the wild
+For the simultaneous band we replace the i.i.d.\ resampling by the wild
 cluster bootstrap \citep{cameron2008bootstrap,field2007bootstrapping} with
 Rademacher multipliers at the template level, studentised by the cluster-robust
 standard error, and inflate the critical value by $t_{G-1}/z$ when $G$ is small
@@ -516,7 +528,7 @@ only when a single hypothesis was considered. Correlation between hypotheses
 $\sigma\sqrt{2\log|\Cclass|/n}$ law (dotted) closely over two orders of magnitude
 in $n$.
 \emph{(c)} At $|\Cclass|=200$, $\rho=0.5$, $n=1000$: every method except the
-naive one attains nominal coverage, and among those the multiplier-bootstrap band
+naive one attains nominal coverage, and among those the bootstrap-$t$ band
 certifies the highest lower bound. The conditional (selective) interval is valid
 but uninformative here, because many hypotheses are nearly tied.}
 \label{fig:anatomy}
@@ -550,7 +562,7 @@ over a pre-registered class of alignment or circuit hypotheses. The four setting
 were chosen to span the regimes that matter.
 
 \emph{(a) Hierarchical equality, searched (TT-A).} A two-layer transformer
-computing $\mathbf{1}\{(a{=}b)=(c{=}d)\}$. Searching \MyttaM{} alignment
+computing $\mathbf{1}\{(a{=}b)=(c{=}d)\}$. Searching \Myttam{} alignment
 hypotheses for the variable $V_1=\mathbf{1}\{a{=}b\}$ finds a clear winner: the
 whole residual stream at the position of token $b$ after layer $0$, with
 interchange accuracy \MyttaThetaBest{}. This is the benign regime --- one
@@ -562,48 +574,61 @@ investigator who wants a \emph{low-dimensional} representation pre-registers onl
 the subspaces of at most 16 dimensions. That class has no dominant member, and
 its top hypotheses are nearly tied: the near-tie regime, where selection bites.
 
-\emph{(c) Hierarchical equality, planted (TT-A-IIT).} The same architecture
-trained with interchange intervention training so that a specific
-16-dimensional subspace is faithful \emph{by construction}. The planted
-hypothesis attains interchange accuracy \MyPlantedTheta{} and is ranked
-\MyPlantedRank{} --- tied with the larger blocks that contain it. This is the
-near-tie regime, where selection is genuinely ambiguous.
-
-\emph{(d) Three-term modular arithmetic (TT-C).} A three-layer transformer
-computing $(a{+}b{+}c) \bmod 10$. Searching \MyttcM{} alignments for the
+\emph{(c) Three-term modular arithmetic (TT-C).} A three-layer transformer
+computing $(a{+}b{+}c) \bmod 10$. Searching \Myttcm{} alignments for the
 intermediate sum $S_1=(a{+}b)\bmod 10$ finds \emph{nothing}: the best population
-interchange accuracy is \MyttcThetaBest{} against a chance level of $0.10$. We
-state this as a fact about the class, not about the network: no single-position,
-single-subspace alignment in our pre-registered class carries $S_1$. (A wider
-class --- unions of positions, or a rotation trained by gradient descent --- might
-do better; we also tried to \emph{plant} $S_1$ by interchange intervention
-training and could not drive its interchange accuracy above chance within our
-budget, which is reported in Appendix~\ref{app:details} and is itself only
-evidence about that training run.) This is nonetheless the regime that matters
-most for us, because it is where a naive report is most dangerous: at $n=1000$
-the best-scoring hypothesis is reported as \MyttcNaivePoint{} on average, which
-an unwary reader would take as evidence of partial localisation.
+interchange accuracy is \MyttcThetaBest{} against a chance level of $0.10$. The class is not
+at fault: training the same architecture with interchange intervention training
+so that $S_1$ \emph{is} carried by a 32-dimensional subspace after layer $1$
+produces a model in which that very hypothesis --- a member of the same
+pre-registered class --- attains interchange accuracy \MyttciitTheta{}
+(Appendix~\ref{app:details}). So the class can express a faithful alignment when
+one exists; the ordinarily trained network simply does not have one at any single
+position. This is the regime that matters most, because it is where a naive
+report is most dangerous: at $n=1000$ the best-scoring hypothesis is reported as
+\MyttcNaivePoint{} on average, which an unwary reader would take as evidence of
+partial localisation.
 
-\emph{(e) Induction circuits (TT-B).} An attention-only two-layer model on the
+\emph{(d) Induction circuits (TT-B).} An attention-only two-layer model on the
 induction task, with the hypothesis class the full power set of its $8$ heads.
-This is the component-subset setting, and it lets us exercise the Occam bound and
-size-constrained selection.
+Here the \emph{unconstrained} arg-max is uninteresting --- \MyttbPerfect{} of the
+256 subsets reproduce the full model's predictions on every instance --- so we
+report the selection an investigator would actually make, the best circuit of at
+most two heads, whose true faithfulness is \MyttbThetaBest{}. This setting also
+exercises the Occam bound with the size-stratified prior.
 
-Table~\ref{tab:tiny} and Figure~\ref{fig:tiny} report exact coverage. The pattern
+Table~\ref{tab:tiny} and Figure~\ref{fig:tiny} report the coverage. The pattern
 matches the theory: naive coverage degrades exactly where the class contains
-near-ties, and all four corrected bounds hold their level in all four settings.
+near-ties, and every corrected bound holds its level everywhere.
+
+\paragraph{Does the correction cost us the right answer?}
+A valid bound is worthless if it makes the search useless. We check this on a
+fifth model, TT-A-IIT: the same equality architecture, trained by interchange
+intervention training \citep{geiger2022inducing} so that a specific
+$16$-dimensional subspace after layer $0$ \emph{is} a faithful carrier of $V_1$
+by construction. The planted hypothesis attains population interchange accuracy
+\MyPlantedTheta{}, and the search returns a hypothesis with that same accuracy
+in \MyPlantedPower{} of replications at $n=1000$. Selection is not the problem;
+reporting the selected score without a correction is.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{../figures/fig_tiny.pdf}
-\caption{\textbf{Exact coverage (top) and certified faithfulness (bottom) on four
-tiny transformers.} Each column is one setting; the horizontal axis is the number
-of interventions used for search and inference. Dashed line: the nominal $95\%$
-level. In the bottom row, the dotted black line is the true faithfulness of the
-selected hypothesis and the red dotted line is the naive point estimate; the gap
-between them is the selection optimism. A valid method's curve must stay below
-the black dotted line. The naive interval (red) sits above it whenever hypotheses
-are near-tied.}
+\caption{\textbf{Coverage (top) and certified faithfulness (bottom) in four
+regimes on the tiny transformers.}
+\emph{(a)} equality, full alignment class: one hypothesis is far better than the
+rest. \emph{(b)} the same task restricted to subspaces of at most 16 dimensions,
+where the top hypotheses are near-tied. \emph{(c)} arithmetic, where no
+hypothesis in the class is faithful at all. \emph{(d)} induction, selecting the
+best circuit of at most two attention heads.
+The horizontal axis is the number of interventions used for \emph{both} search
+and inference; the dashed line is the nominal $95\%$ level. In the bottom row the
+dotted black line is the true faithfulness of the selected hypothesis and the
+grey dashed line is the naive point estimate; the gap between them is the
+selection optimism. A valid method's curve must stay below the black dotted line.
+The conditional interval is omitted from the plot because it is off scale (it
+degenerates whenever hypotheses are near-tied); it appears in
+Table~\ref{tab:tiny}.}
 \label{fig:tiny}
 \end{figure}
 
@@ -621,11 +646,13 @@ the ``ABC'' distribution --- the same prompts with three distinct names, so that
 name information is removed while sentence structure is preserved --- computed
 separately for each template and each token position. This node-level scheme is
 the one used by automated circuit discovery \citep{conmy2023towards};
-\citet{wang2023interpretability} additionally keep each circuit head at only one
-token position, which ablates strictly more and therefore reports a strictly
-smaller recovered fraction than ours for the same head set. Under our scheme the
-published 26-head circuit recovers \MyIOIPubRatio{} of the model's logit
-difference, close to the $87\%$ they report.
+\citet{wang2023interpretability} additionally restrict each circuit head to a
+single token position, so the two schemes are not directly comparable and neither
+dominates. Under ours the published 26-head circuit recovers \MyIOIPubRatio{} of
+the model's logit difference, close to the $87\%$ they report under theirs. The
+statistical machinery does not care which scheme is used --- it consumes whatever
+per-instance score the investigator defines --- but the reported number does, and
+a paper should say which one it means.
 
 \input{generated/tab_main}
 
@@ -636,9 +663,12 @@ result. At $n=1000$ interventions the naive interval covers \MyIOINaiveCov{} of
 the time; the bootstrap band covers \MyIOIBootCov{} and gives up only
 \MyIOIBootPenalty{} of faithfulness relative to the (inflated) point estimate.
 The per-instance scores of different circuits are correlated (median pairwise
-correlation \MyIOIMedCorr{}), so searching inflates the interval by a factor of
-only $\kappa=\MyIOIKappa{}$: the effective number of hypotheses is
-\MyIOIMeff{}, not \MyIOIm{}.
+correlation \MyIOIMedCorr{}), and searching inflates the interval by a factor of
+$\kappa=\MyIOIKappa{}$ against a Bonferroni factor of \MyIOIBonfRatio{} for
+\MyIOIm{} independent hypotheses. Here $\kappa$ is the larger of the two, because
+a large fraction of the class is perfect on every sampled instance: the price
+being paid is not multiplicity but the heavy tail of a studentised maximum over
+near-degenerate columns, which is exactly what the floored variant addresses.
 
 \begin{figure}[t]
 \centering
@@ -670,13 +700,18 @@ that the entire certified frontier is valid with probability
 
 \paragraph{The unit of replication.}
 Table~\ref{tab:cluster} makes the second practical point. When prompts are drawn
-template-by-template, the intra-template correlation of per-instance scores is
-\MyIOIICC{}, giving a design effect of \MyIOIDeff{} at $n=2000$: the
-$2000$ prompts carry about as much information as \MyIOIEffN{} independent ones.
-Bounds that resample prompts then cover only \MyClusterBootCov{} of the time,
-while the cluster bootstrap covers \MyClusterClusterCov{}. Generating more
-prompts from the same templates does not help --- the effective sample size
-saturates at $G/\rho_I$.
+template-by-template --- which is how an IOI evaluation set is actually built ---
+the intra-template correlation of per-instance scores is \MyIOIICC{}, giving a
+design effect of \MyIOIDeff{} at $n=2000$: those $2000$ prompts carry about as
+much information as \MyIOIEffN{} independent ones. The naive interval then covers
+\MyClusterNaiveCov{} of the time, and --- the diagnostic point --- its coverage
+\emph{falls} as $n$ grows (\MyClusterNaiveCovLow{} at $n=500$), because more
+prompts from the same templates sharpen the search without sharpening the
+estimate. The i.i.d.\ band degrades the same way, from
+\MyClusterBootCovLow{} at $n=500$ to \MyClusterBootCov{} at $n=2000$; the cluster
+bootstrap holds its level throughout (\MyClusterClusterCov{}). The effective
+sample size saturates at $G/\rho_I$, so the fix is to write more templates, not
+to generate more prompts.
 
 \paragraph{Pre-registration is the cheapest fix.}
 The published IOI circuit was specified before we generated any data, so a single

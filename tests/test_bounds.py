@@ -325,10 +325,15 @@ def test_thresholdout_spends_budget_only_when_answers_disagree():
     assert th2.spent == 5  # budget exhausted, then it falls back to the train answer
 
 
-def test_thresholdout_reduces_holdout_overfitting():
-    """The classic adaptive-data-analysis demonstration, in miniature: an analyst
-    who greedily keeps whatever looks good on the holdout overfits it; the same
-    analyst mediated by Thresholdout does not."""
+def test_thresholdout_keeps_the_holdout_usable():
+    """The classic adaptive-data-analysis demonstration, in miniature.
+
+    Under the complete null every hypothesis has the same value.  An analyst who
+    selects directly on the holdout burns it: the holdout score of the selected
+    hypothesis is badly biased upwards.  The same analyst, whose queries are
+    answered through Thresholdout, leaves the holdout almost unbiased --- which
+    is the whole point of a reusable holdout.
+    """
     rng = np.random.default_rng(33)
     n, m = 200, 400
     theta = 0.5
@@ -336,11 +341,13 @@ def test_thresholdout_reduces_holdout_overfitting():
     for _ in range(30):
         train = (rng.random((n, m)) < theta).astype(float)
         hold = (rng.random((n, m)) < theta).astype(float)
-        # naive: pick the best column on the holdout, report its holdout mean
+        # (a) select on the holdout, then report the holdout score
         j = int(hold.mean(0).argmax())
         bias_naive.append(hold.mean(0)[j] - theta)
+        # (b) select through Thresholdout, then report the holdout score
         th = Thresholdout(threshold=0.05, sigma=0.02, budget=10, rng=rng)
         ans = np.array([th.query(train[:, k], hold[:, k]) for k in range(m)])
         k = int(ans.argmax())
-        bias_thr.append(ans[k] - theta)
-    assert np.mean(bias_thr) < np.mean(bias_naive)
+        bias_thr.append(hold.mean(0)[k] - theta)
+    assert np.mean(bias_thr) < 0.3 * np.mean(bias_naive)
+    assert np.mean(bias_naive) > 0.05

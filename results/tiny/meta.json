@@ -3,7 +3,7 @@
     "task": "equality",
     "variable": "V1",
     "N": 60000,
-    "m": 450,
+    "m": 435,
     "model_acc": 1.0,
     "theta_max": 0.996999979019165,
     "argmax_label": "resid_post.0@p2:std[0:64]"
@@ -12,7 +12,7 @@
     "task": "equality",
     "variable": "V1",
     "N": 60000,
-    "m": 450,
+    "m": 435,
     "model_acc": 1.0,
     "theta_max": 1.0,
     "argmax_label": "resid_post.0@p2:std[0:16]",
@@ -78,9 +78,59 @@
     "task": "arithmetic",
     "variable": "S1",
     "N": 60000,
-    "m": 480,
+    "m": 464,
     "model_acc": 1.0,
     "theta_max": 0.12790000438690186,
     "argmax_label": "resid_post.0@p3:std[32:64]"
+  },
+  "tt_c_iit": {
+    "task": "arithmetic",
+    "variable": "S1",
+    "N": 60000,
+    "m": 464,
+    "model_acc": 1.0,
+    "theta_max": 1.0,
+    "argmax_label": "resid_post.1@p3:std[0:32]",
+    "planted": [
+      {
+        "variable": "S1",
+        "site": "resid_post.1",
+        "position": 3,
+        "dims": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31
+        ]
+      }
+    ]
   }
 }

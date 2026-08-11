@@ -11,5 +11,13 @@
   },
   "tt_c_arithmetic": {
     "acc": 1.0
+  },
+  "tt_c_arithmetic_iit": {
+    "acc": 1.0,
+    "iit_acc": 1.0
+  },
+  "tt_d_induction_big": {
+    "acc": 1.0,
+    "n_components": 36
   }
 }

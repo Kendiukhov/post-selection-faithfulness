@@ -1,0 +1,10 @@
+{
+  "n": 6000,
+  "m": 840,
+  "n_templates": 30,
+  "n_per_template": 200,
+  "forward_passes": 5058000,
+  "minutes": 203.8170834183693,
+  "device": "mps",
+  "seed": 0
+}

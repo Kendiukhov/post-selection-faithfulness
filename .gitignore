@@ -18,8 +18,12 @@ paper/*.fdb_latexmk
 paper/*.synctex.gz
 paper/*.toc
 results/models/*.pt
-results/**/*.npz
 results/*.log
+
+# Cached per-instance score matrices are committed so that every statistical
+# result can be re-derived without a GPU.  The two largest are excluded; re-run
+# the corresponding script to rebuild them.
+results/tiny/tt_b_scores.npz
 
 # raw agent transcripts of the reference-verification runs; the curated
 # verified_refs*.json files are kept

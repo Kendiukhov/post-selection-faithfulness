@@ -31,7 +31,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from psf import bounds as B  # noqa: E402
 from psf.evaluate import Selection, default_methods, run_replicates, summarize  # noqa: E402
-from psf.functional import influence_band, ratio_influence  # noqa: E402
+from psf.functional import influence_band, ratio_band, ratio_influence  # noqa: E402
 
 
 def alignment_experiment(path: str, tag: str, ns, R, alpha, seed, planted=None,
@@ -82,9 +82,19 @@ def alignment_experiment(path: str, tag: str, ns, R, alpha, seed, planted=None,
             out["rows"].append(row)
         qh = float(np.nanmean(res["qhat"]))
         sel_correct = float(np.mean(res["selected"] == best))
+        if planted is not None:
+            pidx = [i for i, l in enumerate(labels) if l == planted]
+            if pidx:
+                out.setdefault("power", []).append({
+                    "n": n,
+                    "prob_select_planted": float(np.mean(res["selected"] == pidx[0])),
+                    "prob_select_theta_one": float(
+                        np.mean(theta[res["selected"]] >= theta.max() - 1e-12)
+                    ),
+                })
         rng_d = np.random.default_rng(seed * 31 + n)
         q_max, q_marg, kappa = B.multiplicity_factor(
-            S_pool[rng_d.integers(0, N, size=n)], alpha, n_boot=4000, seed=1
+            S_pool[rng_d.integers(0, N, size=n)], alpha, n_boot=2000, seed=1
         )
         out["diag"].append(
             {
@@ -124,28 +134,37 @@ def component_experiment(path: str, tag: str, ns, R, alpha, seed, n_components: 
     }
     methods = default_methods(family_size=m, n_boot=2000, log_prior=log_prior)
 
+    # The unconstrained arg-max is degenerate here: many head subsets reproduce
+    # the full model's predictions exactly.  The informative selection --- and
+    # the one an investigator would actually make --- is "the best circuit of at
+    # most k components".
+    head_sel = Selection("argmax_size_le", max_size=2, sizes=sizes)
+    out["headline_selection"] = "size<=2"
+    out["theta_best_size2"] = float(theta[sizes <= 2].max())
     for n in ns:
         res = run_replicates(
-            agree, n=n, R=R, methods=methods, selection=Selection("argmax"),
+            agree, n=n, R=R, methods=methods, selection=head_sel,
             alpha=alpha, seed=seed + n, theta=theta,
         )
         for row in summarize(res, methods, alpha):
-            row.update({"n": n, "tag": tag, "selection": "argmax"})
+            row.update({"n": n, "tag": tag, "selection": "size<=2"})
             out["rows"].append(row)
         qh = float(np.nanmean(res["qhat"]))
         rng_d = np.random.default_rng(seed * 31 + n)
         q_max, q_marg, kappa = B.multiplicity_factor(
-            agree[rng_d.integers(0, N, size=n)], alpha, n_boot=4000, seed=1
+            agree[rng_d.integers(0, N, size=n)], alpha, n_boot=2000, seed=1
         )
         out["diag"].append(
             {"n": n, "qhat": qh, "q_marginal": q_marg, "kappa": kappa,
              "m_eff": B.effective_num_hypotheses(q_max, alpha, q_marginal=q_marg),
-             "mean_optimism": float(res["optimism"].mean())}
+             "mean_optimism": float(res["optimism"].mean()),
+             "mean_point": float(res["point"].mean()),
+             "mean_theta_selected": float(res["theta_selected"].mean())}
         )
         print(f"  argmax     n={n:5d}  optimism={res['optimism'].mean():+.4f} qhat={qh:.2f}")
 
     # size-constrained selection: "smallest circuit that still works"
-    for kmax in sorted(set(int(x) for x in [2, 3, 4] if x <= n_components)):
+    for kmax in sorted(set(int(x) for x in [3, 4] if x <= n_components)):
         sel = Selection("argmax_size_le", max_size=kmax, sizes=sizes)
         for n in ns:
             res = run_replicates(
@@ -179,7 +198,10 @@ def ratio_replicates(ld, ld_empty, ld_full, theta_pool, ns, R, alpha, seed, m):
             F, psi = ratio_influence(ld[idx], ld_empty[idx], ld_full[idx])
             chat = int(np.argmax(F))
             opt.append(F[chat] - theta_pool[chat])
-            lcb, q = influence_band(F, psi, alpha=alpha, n_boot=1000, seed=seed * 7 + r)
+            _, lcb, q = ratio_band(
+                ld[idx], ld_empty[idx], ld_full[idx], alpha=alpha, n_boot=600,
+                seed=seed * 7 + r,
+            )
             cov_boot += lcb[chat] <= theta_pool[chat]
             w_boot.append(F[chat] - lcb[chat])
             se = np.sqrt((psi**2).sum(axis=0) / (n * (n - 1)))
@@ -217,6 +239,7 @@ def main() -> None:
         ("tt_a_local", "tt_a", None, 16),
         ("tt_a_iit", "tt_a_iit", "resid_post.0@p2:std[0:16]", None),
         ("tt_c", "tt_c", None, None),
+        ("tt_c_iit", "tt_c_iit", "resid_post.1@p3:std[0:32]", None),
     ]
     for tag, fname, planted, md in configs:
         p = os.path.join(args.scores, f"{fname}_scores.npz")

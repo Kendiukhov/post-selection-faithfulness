@@ -203,7 +203,9 @@ def main() -> None:
         )
         m3, rep3, _ = greedy(lambda m: th.query(s_tr(m), s_ho(m)), n_comp, args.stop_at)
         theta3 = float(pool_ev.scores(m3).mean())
-        rep_th3 = float(rep3[-1])
+        # the point of a reusable holdout is that the HOLDOUT survives the search,
+        # so the reported value is the holdout score of the returned circuit
+        rep_th3 = float(s_ho(m3).mean())
 
         rows.append({
             "rep": r, "n_queries": nq,

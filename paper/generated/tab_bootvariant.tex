@@ -1,0 +1,27 @@
+% auto-generated
+\begin{table}[t]
+\centering
+\small
+\caption{\textbf{Why the bootstrap must recompute the standard deviation.}
+Binary faithfulness scores make the sample mean and the sample standard deviation
+dependent, so a multiplier bootstrap that holds $\hat\sigma$ fixed understates the
+upper tail of the studentised maximum and under-covers. Resampling the
+interventions and recomputing $\hat\sigma$ in every replicate restores the nominal
+level at a small cost in width. All entries over 500 replications;
+nominal level $0.95$.}
+\label{tab:bootvariant}
+\begin{tabular}{cccc cc cc}
+\toprule
+& & & & \multicolumn{2}{c}{coverage} & \multicolumn{2}{c}{width} \\
+\cmidrule(lr){5-6} \cmidrule(lr){7-8}
+$|\mathcal{C}|$ & $n$ & $\rho$ & $\theta$ & fixed $\hat\sigma$ & bootstrap-$t$ & fixed $\hat\sigma$ & bootstrap-$t$ \\
+\midrule
+60 & 400 & 0.0 & 0.75 & 0.886 & 0.950 & 0.063 & 0.068 \\
+60 & 400 & 0.6 & 0.75 & 0.892 & 0.944 & 0.061 & 0.066 \\
+300 & 400 & 0.0 & 0.75 & 0.864 & 0.966 & 0.070 & 0.077 \\
+60 & 1500 & 0.0 & 0.75 & 0.910 & 0.942 & 0.034 & 0.035 \\
+60 & 400 & 0.0 & 0.95 & 0.576 & 0.966 & 0.025 & 0.037 \\
+60 & 400 & 0.0 & 0.5 & 0.954 & 0.966 & 0.078 & 0.079 \\
+\bottomrule
+\end{tabular}
+\end{table}

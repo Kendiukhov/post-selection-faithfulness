@@ -243,7 +243,17 @@ def run_replicates(
         S_pool = np.asarray(S_pool)
         N, m = S_pool.shape
         if theta is None:
-            theta = S_pool.mean(axis=0).astype(np.float64)
+            if scheme == "cluster":
+                # the cluster sampler draws clusters uniformly and then instances
+                # uniformly within them, so it targets the *unweighted* mean of
+                # the per-cluster means, which differs from the pooled mean when
+                # clusters have different sizes
+                cl0 = np.asarray(clusters)
+                theta = np.stack(
+                    [S_pool[cl0 == u].mean(axis=0) for u in np.unique(cl0)]
+                ).mean(axis=0).astype(np.float64)
+            else:
+                theta = S_pool.mean(axis=0).astype(np.float64)
     theta = np.asarray(theta, dtype=np.float64)
     theta_star = float(theta[selection.mask(m)].max())
 
