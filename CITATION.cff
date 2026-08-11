@@ -5,7 +5,13 @@ title: >-
 message: If you use this software or the accompanying paper, please cite it.
 type: software
 authors:
-  - name: Anonymous
+  - given-names: Ihor
+    family-names: Kendiukhov
+    email: ihor.kendiukhov@student.uni-tuebingen.de
+    affiliation: >-
+      Institute of Medical Genetics and Applied Genomics, University of
+      Tuebingen, Tuebingen, Germany
+repository-code: 'https://github.com/Kendiukhov/post-selection-faithfulness'
 abstract: >-
   A library and a set of experiments for lower confidence bounds on the graded
   faithfulness of a mechanistic circuit hypothesis that remain valid however the

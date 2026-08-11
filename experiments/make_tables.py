@@ -238,7 +238,7 @@ every hypothesis is known exactly and these coverages are exact, not estimated.
 The naive interval loses coverage wherever the class contains near-ties; the
 post-selection-valid bounds hold everywhere. Nominal level $0.95$.}}
 \\label{{tab:tiny}}
-\\resizebox{{\\linewidth}}{{!}}{{%
+\\begin{{adjustbox}}{{max width=\\linewidth}}
 \\begin{{tabular}}{{llccccccccc}}
 \\toprule
 & & & \\multicolumn{{4}}{{c}}{{coverage}} & \\multicolumn{{3}}{{c}}{{certified $L(\\hat c)$}} \\\\
@@ -247,7 +247,8 @@ setting & $n$ & optimism & naive & boot & union & split & boot & union & split \
 \\midrule
 {chr(10).join(lines)}
 \\bottomrule
-\\end{{tabular}}}}
+\\end{{tabular}}
+\\end{{adjustbox}}
 \\end{{table}}
 """
     open(os.path.join(gendir, "tab_tiny.tex"), "w").write(txt)
@@ -371,7 +372,7 @@ hypotheses are correlated, which is why the bootstrap band certifies more than a
 union bound. Sample splitting overtakes it only when the class is large and
 uncorrelated.}}
 \\label{{tab:synth}}
-\\resizebox{{\\linewidth}}{{!}}{{%
+\\begin{{adjustbox}}{{max width=\\linewidth}}
 \\begin{{tabular}}{{cc c c ccc ccc c}}
 \\toprule
 & & & naive & \\multicolumn{{3}}{{c}}{{multiplicity}} & \\multicolumn{{4}}{{c}}{{certified $L(\\hat c)$}} \\\\
@@ -380,7 +381,8 @@ $|\\mathcal{{C}}|$ & $\\rho$ & optimism & cover & $\\hat q$ & Bonf. & $m_{{\\mat
 \\midrule
 {chr(10).join(lines)}
 \\bottomrule
-\\end{{tabular}}}}
+\\end{{tabular}}
+\\end{{adjustbox}}
 \\end{{table}}
 """
     open(os.path.join(gendir, "tab_synth.tex"), "w").write(txt)
@@ -602,6 +604,22 @@ def app_details(gendir, mac, results_dir="results"):
     open(os.path.join(gendir, "app_details.tex"), "w").write("\n".join(lines) + "\n")
 
 
+def _fit_tables_to_textwidth(gendir):
+    """Wrap every generated tabular in an adjustbox so it shrinks to whatever
+    text block it lands in.  The preprint and the Elsevier submission have
+    different line widths, and a table must fit both."""
+    import glob
+
+    for f in glob.glob(os.path.join(gendir, "tab_*.tex")):
+        s = open(f).read()
+        if "adjustbox" in s:
+            continue
+        s = s.replace("\\begin{tabular}", "\\begin{adjustbox}{max width=\\linewidth}\n\\begin{tabular}", 1)
+        i = s.rfind("\\end{tabular}")
+        s = s[:i] + "\\end{tabular}\n\\end{adjustbox}" + s[i + len("\\end{tabular}"):]
+        open(f, "w").write(s)
+
+
 def build_all(syn, tiny, ioi, greedy, adaptive, gendir, mac_dict):
     def mac(k, v):
         mac_dict[k] = str(v)
@@ -615,6 +633,7 @@ def build_all(syn, tiny, ioi, greedy, adaptive, gendir, mac_dict):
     table_boot_variant(syn, gendir, mac)
     section_adaptive(adaptive, greedy, gendir, mac)
     app_details(gendir, mac)
+    _fit_tables_to_textwidth(gendir)
     if ioi is not None:
         pr = next((r for r in ioi["preregistration"] if r["n"] == 1000), None)
         if pr:

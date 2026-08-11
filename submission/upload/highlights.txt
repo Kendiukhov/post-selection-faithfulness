@@ -1,0 +1,9 @@
+Highlights (Neural Networks requires 3-5 bullets, max 85 characters each
+including spaces).  Upload as an editable .docx whose filename contains the
+word "highlights".
+
+- Circuit faithfulness is reported as the winner of a search, so it is inflated
+- A nominally 95% interval on a searched circuit was right 0.6% of the time
+- Five lower bounds are given that stay valid however the circuit was selected
+- On GPT-2's IOI circuit the valid bound costs 0.007 of certified faithfulness
+- Prompt templates, not prompts, are the unit of replication for such claims

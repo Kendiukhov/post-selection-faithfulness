@@ -55,8 +55,13 @@ src/psf/                library (pure NumPy/SciPy for the statistics; PyTorch on
 
 experiments/            one script per experiment; each writes JSON to results/
 paper/                  LaTeX source; every number is auto-generated into paper/generated/
+                        (abstract.tex, body.tex and appendix.tex are shared with the
+                        journal submission, so the two versions cannot drift apart)
+submission/             the Neural Networks (Elsevier) package: elsarticle manuscript,
+                        cover letter, highlights, declarations and an upload checklist
 tests/                  unit tests, including Monte-Carlo coverage checks of every bound
 scripts/run_all.sh      the full pipeline, in order
+scripts/build_submission.sh  builds and checks the journal submission
 ```
 
 ## Reproducing the paper
@@ -137,10 +142,16 @@ simulated datasets and its empirical coverage is asserted to be at least
 nominal (and, for the naive bound, asserted to be *below* nominal — the failure
 this paper is about).
 
-## Citation
+## Paper
 
-The compiled paper is `paper/main.pdf` and its source is in `paper/`. Machine
-readable metadata is in `CITATION.cff`.
+The compiled preprint is [`paper/main.pdf`](paper/main.pdf); its source is in
+`paper/`. The version prepared for submission to *Neural Networks* (Elsevier),
+together with the cover letter, highlights and author declarations, is in
+[`submission/`](submission/).
+
+**Author.** Ihor Kendiukhov, Institute of Medical Genetics and Applied Genomics, University of Tubingen, Tubingen, Germany (`ihor.kendiukhov@student.uni-tuebingen.de`).
+
+Machine-readable citation metadata is in `CITATION.cff`.
 
 ## License
 

@@ -1,0 +1,93 @@
+%% Submission to Neural Networks (Elsevier).
+%%
+%% Built with Elsevier's elsarticle class in `preprint' mode (single-spaced,
+%% single column, 12pt).  The journal mandates neither double spacing nor line
+%% numbers; line numbers are added below as a courtesy to reviewers.  Reference
+%% style is author-year (APA 7th), as the journal requires.
+%%
+%% The body, abstract, notation macros and auto-generated numbers are shared
+%% verbatim with the preprint in ../paper, so the two cannot drift apart.
+\documentclass[preprint,12pt,authoryear]{elsarticle}
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{adjustbox}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{microtype}
+\emergencystretch=3em  % let long unbreakable inline maths stretch the line
+\usepackage[modulo]{lineno}
+\linenumbers
+
+\journal{Neural Networks}
+
+\graphicspath{{../figures/}}
+\newcommand{\gendir}{../paper/generated/}
+\newcommand{\paperdir}{../paper/}
+\input{\paperdir macros}
+\input{\gendir numbers}
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{How Faithful Is the Circuit You Found?\\
+Post-Selection-Valid Confidence Bounds for Mechanistic Interpretability}
+
+\author[tue]{Ihor Kendiukhov}
+\ead{ihor.kendiukhov@student.uni-tuebingen.de}
+\address[tue]{Institute of Medical Genetics and Applied Genomics,
+University of T\"ubingen, T\"ubingen, Germany}
+
+\begin{abstract}
+\input{\paperdir abstract}
+\end{abstract}
+
+\begin{keyword}
+mechanistic interpretability \sep causal abstraction \sep post-selection
+inference \sep bootstrap \sep confidence bounds \sep circuit discovery
+\end{keyword}
+
+\end{frontmatter}
+
+\input{\paperdir body}
+
+\section*{Declaration of competing interest}
+The author declares that he has no known competing financial interests or
+personal relationships that could have appeared to influence the work reported
+in this paper.
+
+\section*{Declaration of generative AI and AI-assisted technologies in the writing process}
+During the preparation of this work the author used a large language model
+(Anthropic Claude) to assist with implementing the software, running the
+experiments, and drafting and editing the text. After using this tool the author
+reviewed and edited the content as needed and takes full responsibility for the
+content of the publication.
+
+\section*{CRediT authorship contribution statement}
+\textbf{Ihor Kendiukhov:} Conceptualization, Methodology, Software, Validation,
+Formal analysis, Investigation, Data curation, Writing -- original draft,
+Writing -- review \& editing, Visualization, Project administration.
+
+\section*{Data availability}
+All code, the cached per-instance faithfulness score matrices, the analysis
+outputs and the manuscript source are publicly available at
+\url{https://github.com/Kendiukhov/post-selection-faithfulness} and archived at
+Zenodo (DOI: 10.5281/zenodo.XXXXXXX). No third-party data were used: the only
+external artefact is the publicly available GPT-2 small checkpoint, downloaded at
+run time from the Hugging Face Hub; all evaluation prompts and all small
+transformers are generated or trained by the released code.
+
+\section*{Acknowledgements}
+This research received no specific grant from any funding agency in the public,
+commercial, or not-for-profit sectors.
+
+\bibliographystyle{elsarticle-harv}
+\bibliography{\paperdir references}
+
+\appendix
+\input{\paperdir appendix}
+
+\end{document}

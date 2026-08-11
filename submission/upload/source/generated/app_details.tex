@@ -1,0 +1,58 @@
+% auto-generated
+\paragraph{Models.} All tiny transformers are pre-LayerNorm decoder-only
+transformers with learned positional embeddings, trained with AdamW
+(batch 512, gradient clipping at 1.0, linear warm-up). Every model reaches
+$100\%$ accuracy on its task; held-out accuracies are:
+\begin{itemize}\itemsep0pt
+\item TT-A, hierarchical equality, 2 layers $\times$ 4 heads, $d=64$: accuracy 1.0000
+\item TT-A-IIT, same architecture, alignment planted by IIT: accuracy 1.0000
+\item TT-B, induction, attention-only, 2 layers $\times$ 4 heads, $d=64$: accuracy 1.0000
+\item TT-C, three-term modular arithmetic, 3 layers $\times$ 4 heads, $d=64$: accuracy 1.0000
+\item tt\_c\_arithmetic\_iit: accuracy 1.0000, interchange accuracy at the planted site 1.000
+\item TT-D, induction, 4 layers $\times$ 8 heads $+$ MLPs, $d=128$: accuracy 1.0000
+\end{itemize}
+
+\paragraph{Hypothesis classes.}
+For the alignment experiments the class is
+all (site, position, basis, coordinate block) combinations, with sites
+\texttt{resid\_pre.0} and \texttt{resid\_post.}$\ell$ for each layer $\ell$, every token position,
+two bases (the standard one and one fixed random orthonormal rotation), and
+contiguous blocks of $8$, $16$, $32$ and $64$ coordinates. This class is fixed
+before any data is seen, which is what the simultaneous bounds require.
+For GPT-2 the class is the $2^7=128$ unions of the seven functional head groups
+of \citet{wang2023interpretability}, plus size-stratified random subsets of the
+26 published heads and of all 144 heads, plus the published circuit and the full
+model: 840 distinct circuits in total.
+
+\paragraph{Ablation scheme.}
+Attention heads outside a circuit are mean-ablated: the head's output slice of
+the input to \texttt{c\_proj} is replaced by its mean over the ABC distribution
+(three distinct names), computed \emph{per template and per token position} so
+that positions stay aligned. MLPs, embeddings and layer norms are never ablated.
+This is the node-level scheme used by automated circuit discovery
+\citep{conmy2023towards}; \citet{wang2023interpretability} additionally restrict
+each circuit head to a single token position, which is why our recovered
+fractions are not numerically identical to theirs.
+
+\paragraph{Positive controls.}
+Two of the five models are trained with interchange intervention training
+\citep{geiger2022inducing} so that a specific subspace is a faithful carrier of a
+specific high-level variable by construction, giving a known-correct member of the
+search space. TT-A-IIT plants $V_1 = \mathbf{1}\{a=b\}$ in the first 16
+coordinates of the residual stream after layer 0 at the position of token $b$;
+TT-C-IIT plants the intermediate sum $S_1 = (a+b) \bmod 10$ in the first 32
+coordinates after layer 1 at the final position. Both reach $100\%$ task accuracy
+and $100\%$ interchange accuracy at the planted site. One implementation note
+that cost us a day: the source-side forward pass must remain attached to the
+autograd graph. If the source activations are detached before being patched in,
+the network receives no gradient asking it to \emph{encode} the variable in the
+planted subspace --- only to react to whatever is already there --- and the
+interchange accuracy never leaves chance.
+
+\paragraph{Compute.}
+The GPT-2 score matrix required 5,058,000 forward passes
+(204 minutes on one Apple M2 Pro GPU). The greedy search
+required a further 1,776 circuit evaluations
+(14 minutes). Tiny-model training and score matrices take
+under 40 minutes in total. Every statistical result in the paper is then computed
+from cached score matrices on CPU in a few minutes.

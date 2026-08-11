@@ -1,0 +1,93 @@
+\documentclass[11pt]{letter}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage[T1]{fontenc}
+\usepackage{url}
+
+\signature{Ihor Kendiukhov}
+\address{Ihor Kendiukhov\\
+Institute of Medical Genetics and Applied Genomics\\
+University of T\"ubingen\\
+T\"ubingen, Germany\\
+\texttt{ihor.kendiukhov@student.uni-tuebingen.de}}
+
+\begin{document}
+\begin{letter}{The Editors\\ \textit{Neural Networks}\\ Elsevier}
+
+\opening{Dear Editors,}
+
+I am submitting the manuscript \textbf{``How Faithful Is the Circuit You Found?
+Post-Selection-Valid Confidence Bounds for Mechanistic Interpretability''} for
+consideration as an \emph{Article} in \textit{Neural Networks}. I suggest the
+\textbf{Mathematical and Computational Analysis} section; \textbf{Learning
+Systems} would also be appropriate if the editors prefer it.
+
+\medskip
+\noindent\textbf{What the paper is about.}
+Work that reverse-engineers a trained network into an interpretable circuit
+reports a faithfulness score: how much of the network's behaviour survives when
+everything outside the proposed circuit is intervened on. Almost always, that
+score is the largest of many --- the circuit was chosen by maximising the score
+on the very interventions later used to report it --- and it is accompanied by a
+standard error computed as though no search had taken place. This is the winner's
+curse, and it makes the field's headline numbers optimistic by an amount nobody
+has measured.
+
+This manuscript quantifies the problem and fixes it. It formalises graded
+faithfulness as a population quantity and circuit search as a selection rule,
+proves that the inflation of a selected score is of order
+$\sigma\sqrt{\log|\mathcal{C}|/n}$ in the size of the searched class and the
+number of interventions, and supplies five lower confidence bounds that remain
+valid however the circuit was chosen. Coverage is then \emph{measured} rather
+than assumed, on five small transformers whose algorithms are known by
+construction (two of them with a correct circuit planted by interchange
+intervention training, so that the truth is available exactly) and on the
+indirect-object-identification circuit of GPT-2 small.
+
+\medskip
+\noindent\textbf{Why it may interest this readership.}
+\begin{itemize}\itemsep2pt
+\item It is about neural networks specifically, not statistics in general. Three
+of the corrections had to be re-derived because faithfulness scores are binary,
+because the most widely used metric is a ratio of means rather than a mean, and
+because circuit classes are power sets of network components. In particular, the
+textbook multiplier bootstrap \emph{under-covers} for binary faithfulness scores
+--- $58\%$ instead of $95\%$ in our simulations --- and we show why and what to
+use instead.
+\item The empirical findings are actionable. A nominally $95\%$ interval on a
+searched circuit was correct $0.6\%$ of the time in the controlled setting and
+$59\%$ of the time on GPT-2; the valid alternative costs only $0.007$ of
+certified faithfulness. Separately, we show that prompt \emph{templates}, not
+prompts, are the unit of replication, so that generating more prompts from the
+same templates does not buy the evidence practitioners assume it does.
+\item The paper ends with a six-item reporting protocol that adds one column to a
+results table and no additional model evaluations.
+\end{itemize}
+
+\medskip
+\noindent\textbf{Reproducibility.}
+All code, the cached per-instance score matrices, the analysis outputs and the
+manuscript source are public at
+\url{https://github.com/Kendiukhov/post-selection-faithfulness}. Every
+statistical result in the paper can be recomputed from the committed matrices
+without a GPU; the full pipeline, including the GPT-2 passes, runs in about five
+GPU-hours on a single consumer accelerator. The library ships with a test suite
+whose Monte-Carlo checks verify the coverage of every bound.
+
+\medskip
+\noindent\textbf{Declarations.}
+The manuscript is original, is not under consideration elsewhere, and has not
+been published before in any form, including as a conference paper. There are no
+competing interests and no funding to declare. I am the sole author and take full
+responsibility for the content, including for the use of an AI assistant in
+implementing the software and drafting the text, which is disclosed in the
+manuscript in accordance with Elsevier policy.
+
+\medskip
+\noindent I would be grateful for the editors' consideration, and I am happy to
+provide any further material the review process requires.
+
+\closing{Yours sincerely,}
+
+\end{letter}
+\end{document}

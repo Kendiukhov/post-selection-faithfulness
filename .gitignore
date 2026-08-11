@@ -28,3 +28,20 @@ results/tiny/tt_b_scores.npz
 # raw agent transcripts of the reference-verification runs; the curated
 # verified_refs*.json files are kept
 references/*_raw.json
+submission/*.aux
+submission/*.bbl
+submission/*.blg
+submission/*.log
+submission/*.out
+submission/*.fls
+submission/*.fdb_latexmk
+submission/*.spl
+submission/upload/source/*.aux
+submission/upload/source/*.bbl
+submission/upload/source/*.blg
+submission/upload/source/*.log
+submission/upload/source/*.out
+submission/upload/source/*.fls
+submission/upload/source/*.fdb_latexmk
+submission/upload/source/*.spl
+submission/upload/source/manuscript.pdf
