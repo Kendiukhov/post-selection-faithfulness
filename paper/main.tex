@@ -782,9 +782,18 @@ addressed by, confidence bounds.
 Closest to us is \citet{shi2024hypothesis}, who test a \emph{given} circuit
 hypothesis against nulls built from random or shuffled circuits. Their tests
 assume the circuit was fixed in advance; our contribution is precisely the
-selection step that precedes such a test. \citet{adolfi2025complexity} show that
-circuit discovery is computationally intractable in the worst case, a
-complementary negative result about search rather than inference.
+selection step that precedes such a test. The field is not innocent of
+multiplicity either: \citet{wang2023interpretability} already check
+\emph{completeness} and \emph{minimality} by evaluating their circuit over a
+distribution of knockout subsets rather than at a single point, which is a
+multiplicity-aware check in spirit, and the distributed-alignment-search line
+\citep{geiger2024finding,wu2023interpretability} trains its alignments on one
+split and evaluates on another, so the premise of this paper does not apply to it
+without qualification. What is missing across all of them is a confidence bound
+on the reported number that survives the search --- which is what we supply.
+\citet{adolfi2025complexity} show that circuit discovery is computationally
+intractable in the worst case, a complementary negative result about search
+rather than inference.
 
 \paragraph{Post-selection and adaptive inference.}
 Valid post-selection inference \citep{berk2013valid}, exact selective inference
