@@ -11,11 +11,14 @@ repeated 40 times with the truth computed exactly on a pool of
 
 The first finding is a negative one, and worth stating plainly: on this model an
 adaptive search of 631 queries \emph{barely overfits at all}.
-Reporting the search set's own score is biased by +0.0000;
+Reporting the search set's own score is biased by $+3\times 10^{-5}$;
 searching directly on a holdout and reporting the holdout score by
-+0.0000; answering through Thresholdout
-\citep{dwork2015reusable} by -0.0001. The reason is visible
-in the truth: the returned circuit's true faithfulness is 1.0000,
+$+3\times 10^{-5}$; answering through Thresholdout
+\citep{dwork2015reusable} by $-1\times 10^{-4}$. All three are of order
+$10^{-4}$ or smaller, far below the precision at which faithfulness is ever
+reported. The reason is
+visible in the truth: the returned circuit's true faithfulness is
+0.99997,
 because many small subsets of this network reproduce its predictions exactly.
 Adaptive search is not automatically catastrophic, and a paper that holds data out
 is not thereby buying much accuracy.
@@ -26,7 +29,7 @@ could have returned means covering ${11}$
 orders of magnitude worth of subsets
 ($\log|\text{reachable}| = 25$ nats); the resulting
 bound is valid (100\% coverage) but certifies only
-0.732 against a truth of 1.0000. Holding
+0.732 against a truth of 0.99997. Holding
 out 250 interventions certifies 0.965 instead. The
 naive interval on the search data covers 92\%.
 The same accounting holds on GPT-2 small (Figure~\ref{fig:greedy}, Table~\ref{tab:greedy}). A greedy pruner over a pre-registered pool of 60 candidate heads, using 200 interventions, issues 1,776 queries and returns a 11-head circuit. Its own search set says the circuit recovers 0.917 of the model's logit difference; 1200 held-out interventions say 0.916. The largest gap anywhere on the pruning path is 0.033. A bound uniform over every circuit the search could have reached ($\log|\text{reachable}| = 42$ nats) certifies 0.601; a held-out set of the same size as the search set already certifies 0.866.

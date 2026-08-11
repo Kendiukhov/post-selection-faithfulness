@@ -129,9 +129,12 @@ def fig_anatomy(syn: dict, outdir: str) -> None:
     ax.set_xlabel("hypotheses searched")
     ax.set_ylabel("coverage of the naive 95% bound")
     ax.set_title("(a) The usual error bar fails")
-    ax.set_ylim(-0.03, 1.06)
-    ax.legend(frameon=False, loc="upper right", ncol=2, handlelength=1.2,
-              columnspacing=0.8, borderpad=0.1)
+    # every curve starts at 0.95 and falls, so a single legend row above 1.0 is
+    # the only place that no curve can reach
+    ax.set_ylim(-0.03, 1.20)
+    ax.legend(frameon=False, fontsize=5.2, loc="upper center", ncol=4,
+              handlelength=0.9, columnspacing=0.45, handletextpad=0.35,
+              borderpad=0.1)
     ax.text(0.97, 0.62, "lines: exact\ncircles: simulation", transform=ax.transAxes,
             fontsize=5.8, color="0.35", ha="right", va="top")
 
@@ -150,9 +153,14 @@ def fig_anatomy(syn: dict, outdir: str) -> None:
     ax.set_xlabel("interventions $n$")
     ax.set_ylabel("reported $-$ true faithfulness")
     ax.set_title("(b) Optimism follows the theory")
-    leg = ax.legend(frameon=False, fontsize=5.8, ncol=2, title="hypotheses",
-                    handlelength=1.2, columnspacing=0.8, borderpad=0.1, loc="lower left")
-    leg.get_title().set_fontsize(5.8)
+    # open a band below the lowest curve so the legend cannot touch any of them
+    lo = min(r["optimism"] for r in rows)
+    hi = max(max(r["optimism"], r["predicted_iid"]) for r in rows)
+    ax.set_ylim(lo / 3.4, hi * 1.25)
+    leg = ax.legend(frameon=False, fontsize=5.6, ncol=2, title="hypotheses",
+                    handlelength=1.2, columnspacing=0.8, borderpad=0.1,
+                    labelspacing=0.25, handletextpad=0.5, loc="lower left")
+    leg.get_title().set_fontsize(5.6)
     ax.text(0.97, 0.95, "dotted: $\\sigma\\sqrt{2\\log m/n}$", transform=ax.transAxes,
             fontsize=5.8, color="0.35", ha="right", va="top")
 
@@ -185,8 +193,13 @@ def fig_anatomy(syn: dict, outdir: str) -> None:
     ax.set_ylabel("mean certified lower bound")
     ax.set_title("(c) What each method certifies")
     ax.set_xticks(rhos)
-    ax.legend(frameon=False, fontsize=5.6, ncol=2, handlelength=1.4,
-              columnspacing=0.7, borderpad=0.1, loc="lower left")
+    # the curves occupy a narrow band; extend the axis downwards so the legend
+    # sits in empty space instead of on top of them
+    ylo, yhi = ax.get_ylim()
+    ax.set_ylim(ylo - 0.42 * (yhi - ylo), yhi)
+    ax.legend(frameon=False, fontsize=5.4, ncol=2, handlelength=1.4,
+              columnspacing=0.7, borderpad=0.1, labelspacing=0.25,
+              handletextpad=0.5, loc="lower left")
 
     fig.savefig(os.path.join(outdir, "fig_anatomy.pdf"))
     plt.close(fig)
@@ -268,12 +281,14 @@ def fig_tiny(tiny: dict, outdir: str) -> None:
 
 
 def fig_ioi(ioi: dict, outdir: str) -> None:
-    fig, axes = plt.subplots(1, 3, figsize=(TEXTWIDTH, 2.3), constrained_layout=True)
+    fig, axes = plt.subplots(1, 3, figsize=(TEXTWIDTH, 2.45), constrained_layout=True)
 
-    # (a) coverage vs n
+    # (a) coverage vs n -- methods shared with panel (c) go in one figure legend
     ax = axes[0]
     rows = [r for r in ioi["iid"]["rows"] if r.get("selection") == "argmax"]
-    for nm in ["naive", "split", "hybrid", "union-best", "boot-max", "boot-floored"]:
+    shown = ["naive", "split", "hybrid", "union-best", "boot-max", "boot-floored"]
+    ns_a = sorted({r["n"] for r in rows})
+    for nm in shown:
         rr = sorted([r for r in rows if r["method"] == nm], key=lambda x: x["n"])
         if not rr:
             continue
@@ -281,29 +296,35 @@ def fig_ioi(ioi: dict, outdir: str) -> None:
                 color=PALETTE[nm], label=SHORT.get(nm, nm))
     ax.axhline(0.95, color="k", ls="--", lw=0.9)
     ax.set_xscale("log")
-    ax.set_ylim(-0.03, 1.06)
+    ax.set_xticks(ns_a)
+    ax.set_xticklabels([str(n) for n in ns_a])
+    ax.minorticks_off()
+    ax.set_ylim(-0.03, 1.09)
     ax.set_xlabel("interventions $n$")
     ax.set_ylabel("coverage")
     ax.set_title("(a) Coverage on IOI")
-    ax.legend(frameon=False, fontsize=5.6, ncol=2, loc="lower right",
-              handlelength=1.3, columnspacing=0.7, borderpad=0.1)
 
     # (b) certified Pareto frontier
     ax = axes[1]
     fr = [r for r in ioi["frontier"]["rows"] if r["k"] <= 30]
     ks = [r["k"] for r in fr]
-    ax.plot(ks, [r["naive_point"] for r in fr], color=PALETTE["naive"], lw=1.4,
-            label="naive point estimate")
-    ax.plot(ks, [r["truth"] for r in fr], "k:", lw=1.4, label="truth")
-    ax.plot(ks, [r["boot_lcb"] for r in fr], color=PALETTE["boot-max"], lw=1.4,
-            label="simultaneous band")
-    ax.plot(ks, [r["occam_lcb"] for r in fr], color=PALETTE["occam"], lw=1.1,
-            label="Occam bound")
+    curves = [
+        ("naive point estimate", [r["naive_point"] for r in fr], PALETTE["naive"], "-", 1.4),
+        ("truth", [r["truth"] for r in fr], "k", ":", 1.4),
+        ("simultaneous band", [r["boot_lcb"] for r in fr], PALETTE["boot-max"], "-", 1.4),
+        ("Occam bound", [r["occam_lcb"] for r in fr], PALETTE["occam"], "-", 1.1),
+    ]
+    for lab, y, col, ls, lw in curves:
+        ax.plot(ks, y, color=col, ls=ls, lw=lw, label=lab)
     ax.set_xlabel("circuit size budget (heads)")
     ax.set_ylabel("faithfulness")
     ax.set_title("(b) The whole frontier at once")
-    ax.legend(frameon=False, fontsize=5.6, loc="lower right", handlelength=1.3,
-              borderpad=0.1)
+    ax.set_xlim(-1, 31)
+    lo = min(min(y) for _, y, _, _, _ in curves)
+    ax.set_ylim(lo - 0.02, 1.03)
+    # the curves all rise to the top right, so the lower right corner is free
+    ax.legend(frameon=False, fontsize=5.6, loc="lower right", ncol=1,
+              handlelength=1.4, borderpad=0.1, labelspacing=0.3)
 
     # (c) clustered sampling
     ax = axes[2]
@@ -315,15 +336,28 @@ def fig_ioi(ioi: dict, outdir: str) -> None:
                 for n in ns]
         ax.bar(np.arange(len(ns)) + (j - 0.5) * width, vals, width,
                color=PALETTE[nm], label=SHORT.get(nm, nm))
+    nv = [next((r["coverage"] for r in cl if r["n"] == n and r["method"] == "naive"), np.nan)
+          for n in ns]
+    ax.plot(np.arange(len(ns)), nv, "o--", ms=3.4, lw=1.1, color=PALETTE["naive"],
+            label=SHORT["naive"])
     ax.axhline(0.95, color="k", ls="--", lw=0.9)
     ax.set_xticks(np.arange(len(ns)))
     ax.set_xticklabels([str(n) for n in ns])
-    ax.set_xlabel("prompts $n$ (drawn template-by-template)")
+    ax.set_xlabel("prompts $n$, drawn by template")
     ax.set_ylabel("coverage")
-    ax.set_ylim(0, 1.08)
+    ax.set_ylim(0, 1.09)
     ax.set_title("(c) Templates are the unit")
-    ax.legend(frameon=False, fontsize=5.6, loc="lower right", borderpad=0.1)
 
+    # one legend for the whole figure, below the panels: panels (a) and (c) draw
+    # from the same set of methods, so a per-panel legend only invites overlap
+    handles, labels = [], []
+    for a in (axes[0], axes[2]):
+        for h, lb in zip(*a.get_legend_handles_labels()):
+            if lb not in labels:
+                handles.append(h)
+                labels.append(lb)
+    fig.legend(handles, labels, frameon=False, fontsize=6.2, ncol=7,
+               loc="outside lower center", handlelength=1.4, columnspacing=1.1)
     fig.savefig(os.path.join(outdir, "fig_ioi.pdf"))
     plt.close(fig)
 
@@ -334,42 +368,71 @@ def fig_ioi(ioi: dict, outdir: str) -> None:
 
 
 def fig_greedy(g: dict, outdir: str) -> None:
-    fig, axes = plt.subplots(1, 2, figsize=(TEXTWIDTH, 2.3), constrained_layout=True,
-                             gridspec_kw={"width_ratios": [1.0, 1.25]})
+    fig, axes = plt.subplots(1, 2, figsize=(TEXTWIDTH, 2.35), constrained_layout=True,
+                             gridspec_kw={"width_ratios": [1.0, 1.15]})
     sizes = np.array(g["sizes"])
     sc = np.array(g["search_curve"])
     ec = np.array(g["eval_curve"])
+
+    # (a) the two curves, labelled directly: a legend box would sit on top of them
     ax = axes[0]
-    ax.fill_between(sizes, ec, sc, where=sc >= ec, color=PALETTE["naive"], alpha=0.18, lw=0)
-    ax.plot(sizes, sc, color=PALETTE["naive"], lw=1.4, label="score on the search set")
-    ax.plot(sizes, ec, "k:", lw=1.4, label="score on held-out interventions")
+    ax.fill_between(sizes, ec, sc, where=sc >= ec, color=PALETTE["naive"], alpha=0.25, lw=0)
+    ax.plot(sizes, sc, color=PALETTE["naive"], lw=1.4)
+    ax.plot(sizes, ec, "k:", lw=1.4)
     ps = g["p_star"]
     ax.plot([sizes[ps]], [sc[ps]], "o", ms=4, color="k", mfc="white", mew=1.2, zorder=5)
-    ax.annotate(f"returned circuit\n({g['final_size']} heads)",
-                (sizes[ps], sc[ps]), textcoords="offset points", xytext=(6, -2),
-                fontsize=5.8, color="0.25")
     ax.invert_xaxis()
+    ax.set_ylim(min(ec.min(), sc.min()) - 0.05, max(sc) + 0.28)
+    ax.annotate("scored on the search set", (sizes[np.argmax(sc)], max(sc)),
+                textcoords="offset points", xytext=(0, 14), ha="center",
+                fontsize=6.0, color=PALETTE["naive"])
+    # anchor in the empty region under the plateau, where the curves are far
+    # away and nothing else is drawn
+    j = int(np.argmin(np.abs(sizes - 46)))
+    ax.annotate("scored on held-out\ninterventions", (sizes[j], ec[j]),
+                textcoords="offset points", xytext=(0, -48), ha="center", va="top",
+                fontsize=6.0, color="0.15",
+                arrowprops=dict(arrowstyle="-", lw=0.6, color="0.4",
+                                shrinkA=1, shrinkB=3))
+    # to the left of the marker: everything above it is on the falling curve
+    ax.annotate(f"returned circuit\n({g['final_size']} heads)", (sizes[ps], sc[ps]),
+                textcoords="offset points", xytext=(-46, -1), ha="right", va="center",
+                fontsize=6.0, color="0.25",
+                arrowprops=dict(arrowstyle="-", lw=0.6, color="0.4",
+                                shrinkA=1, shrinkB=4))
     ax.set_xlabel("heads remaining")
     ax.set_ylabel("fraction of logit difference\nrecovered")
     ax.set_title("(a) A pruner overfits its own data")
-    ax.legend(frameon=False, fontsize=5.8, loc="lower center", borderpad=0.1)
-    ax.text(0.03, 0.30, f"largest gap\non the path:\n{g['max_gap_on_path']:.3f}",
-            transform=ax.transAxes, fontsize=5.8, color=PALETTE["naive"], va="top")
 
+    # (b) horizontal bars; values sit inside the bars, clear of the truth line
     ax = axes[1]
-    labels = [r["name"] for r in g["bounds"]]
-    vals = [r["lcb"] for r in g["bounds"]]
-    cols = [r.get("color", "#4C72B0") for r in g["bounds"]]
+    short = {
+        "naive bound on the search data": "naive, on the search data",
+        "held-out, 200 fresh interventions": "held out, 200 interventions",
+        "held-out, 1200 fresh interventions": "held out, 1200 interventions",
+    }
+    labels, vals, cols = [], [], []
+    for r in g["bounds"]:
+        nm = r["name"]
+        if "could have reached" in nm:
+            nm = "uniform over the reachable set"
+        labels.append(short.get(nm, nm))
+        vals.append(r["lcb"])
+        cols.append(r.get("color", "#4C72B0"))
     ypos = np.arange(len(vals))
-    ax.barh(ypos, vals, color=cols, height=0.62)
+    ax.barh(ypos, vals, color=cols, height=0.6)
     for y, v in zip(ypos, vals):
-        ax.text(v + 0.008, y, f"{v:.3f}", va="center", fontsize=5.8, color="0.2")
+        ax.text(v - 0.012, y, f"{v:.3f}", va="center", ha="right", fontsize=6.0,
+                color="white", fontweight="bold")
     ax.axvline(g["truth"], color="k", ls=":", lw=1.2)
-    ax.text(g["truth"], len(vals) - 0.35, " truth", fontsize=5.8, color="0.25", va="top")
     ax.set_yticks(ypos)
-    ax.set_yticklabels(labels, fontsize=5.8)
+    ax.set_yticklabels(labels, fontsize=6.2)
     ax.invert_yaxis()
-    ax.set_xlim(0, max(vals) * 1.22)
+    # a strip above the first bar, so the label for the truth line sits clear of it
+    ax.set_ylim(len(vals) - 0.45, -1.00)
+    ax.annotate("truth", (g["truth"], -0.66), textcoords="offset points",
+                xytext=(-3, 0), fontsize=6.0, color="0.25", va="center", ha="right")
+    ax.set_xlim(0, max(max(vals), g["truth"]) * 1.10)
     ax.set_xlabel("certified faithfulness of the returned circuit")
     ax.set_title("(b) What survives an adaptive search")
     ax.grid(axis="y", visible=False)

@@ -435,14 +435,22 @@ def section_adaptive(ad, greedy, gendir, mac):
         open(os.path.join(gendir, "adaptive.tex"), "w").write("% adaptive results pending\n")
         return
     b, cov, cert = ad["bias"], ad["coverage"], ad["certified"]
+
+    def sci(v: float) -> str:
+        """A tiny number in scientific notation; '+0.0000' reads like a placeholder."""
+        if v == 0.0:
+            return "$0$"
+        e = int(np.floor(np.log10(abs(v))))
+        return f"${v / 10.0 ** e:+.0f}\\times 10^{{{e}}}$"
+
     mac("MyAdComponents", ad["n_components"])
     mac("MyAdQueries", f"{ad['n_queries']:,}")
     mac("MyAdLogReach", f"{ad['log_reachable']:.0f}")
     mac("MyAdReachCount", f"10^{{{ad['log_reachable'] / np.log(10):.0f}}}")
     mac("MyAdNTrain", ad["n_train"])
-    mac("MyAdBiasSame", f"{b['M1_same_data']:+.4f}")
-    mac("MyAdBiasReuse", f"{b['M2_holdout_reused']:+.4f}")
-    mac("MyAdBiasThr", f"{b['M3_thresholdout']:+.4f}")
+    mac("MyAdBiasSame", sci(b["M1_same_data"]))
+    mac("MyAdBiasReuse", sci(b["M2_holdout_reused"]))
+    mac("MyAdBiasThr", sci(b["M3_thresholdout"]))
     mac("MyAdCovNaive", f"{100 * cov['naive_on_search_data']:.0f}\\%")
     mac("MyAdCovSplit", f"{100 * cov['split']:.0f}\\%")
     mac("MyAdCovOccam", f"{100 * cov['occam_reachable']:.0f}\\%")
@@ -483,11 +491,14 @@ repeated {ad['R']} times with the truth computed exactly on a pool of
 
 The first finding is a negative one, and worth stating plainly: on this model an
 adaptive search of {ad['n_queries']:,} queries \\emph{{barely overfits at all}}.
-Reporting the search set's own score is biased by {b['M1_same_data']:+.4f};
+Reporting the search set's own score is biased by {sci(b['M1_same_data'])};
 searching directly on a holdout and reporting the holdout score by
-{b['M2_holdout_reused']:+.4f}; answering through Thresholdout
-\\citep{{dwork2015reusable}} by {b['M3_thresholdout']:+.4f}. The reason is visible
-in the truth: the returned circuit's true faithfulness is {ad['mean_truth']:.4f},
+{sci(b['M2_holdout_reused'])}; answering through Thresholdout
+\\citep{{dwork2015reusable}} by {sci(b['M3_thresholdout'])}. All three are of order
+$10^{{-4}}$ or smaller, far below the precision at which faithfulness is ever
+reported. The reason is
+visible in the truth: the returned circuit's true faithfulness is
+{ad['mean_truth']:.5f},
 because many small subsets of this network reproduce its predictions exactly.
 Adaptive search is not automatically catastrophic, and a paper that holds data out
 is not thereby buying much accuracy.
@@ -498,7 +509,7 @@ could have returned means covering ${{{ad['log_reachable'] / np.log(10):.0f}}}$
 orders of magnitude worth of subsets
 ($\\log|\\text{{reachable}}| = {ad['log_reachable']:.0f}$ nats); the resulting
 bound is valid ({100 * cov['occam_reachable']:.0f}\\% coverage) but certifies only
-{cert['occam_reachable']:.3f} against a truth of {ad['mean_truth']:.4f}. Holding
+{cert['occam_reachable']:.3f} against a truth of {ad['mean_truth']:.5f}. Holding
 out {ad['n_holdout']} interventions certifies {cert['split']:.3f} instead. The
 naive interval on the search data covers {100 * cov['naive_on_search_data']:.0f}\\%.
 {gtxt}
