@@ -8,6 +8,9 @@ PY=${PY:-python3}
 echo "=== checking the journal's formal requirements ==="
 $PY scripts/check_submission.py
 
+echo "=== writing the paste-in abstract and keywords ==="
+$PY scripts/make_abstract_txt.py
+
 echo "=== building the manuscript and the cover letter ==="
 ( cd submission && latexmk -pdf -interaction=nonstopmode manuscript.tex >/dev/null )
 ( cd submission && latexmk -pdf -interaction=nonstopmode cover_letter.tex >/dev/null )
@@ -44,6 +47,7 @@ PYEOF
 cp submission/manuscript.pdf "$OUT/manuscript.pdf"
 cp submission/cover_letter.pdf "$OUT/cover_letter.pdf"
 cp submission/highlights.txt "$OUT/highlights.txt"
+cp submission/abstract.txt "$OUT/abstract.txt"
 cp submission/declarations.md "$OUT/declarations.md"
 
 echo "=== verifying the standalone source compiles ==="

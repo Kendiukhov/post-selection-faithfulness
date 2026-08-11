@@ -19,6 +19,7 @@ cover letter, and assembles a self-contained `upload/` directory.
 | `upload/cover_letter.pdf` | Cover Letter | Also proposes the journal Section (see below). |
 | `upload/highlights.txt` → convert to `.docx` | Highlights | 3–5 bullets, ≤ 85 characters each. The filename must contain the word "highlights" and the file must be editable (`.docx`). |
 | Declaration of competing interest | Declaration of Interest | **Generate with Elsevier's tool** at <https://declarations.elsevier.com/>, select "I have nothing to declare", download the `.docx` and upload it. Signatures are not required. |
+| `upload/abstract.txt` | *(not uploaded)* | Paste-in copy of the abstract — one line of plain text, 250 words — and the six keywords, for the web forms. Generated from the manuscript by `scripts/make_abstract_txt.py`, so it cannot drift. |
 
 Wording for every declaration is in [`declarations.md`](declarations.md); the same
 statements are also printed in the manuscript.
