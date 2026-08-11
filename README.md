@@ -2,6 +2,10 @@
 
 **How faithful is the circuit you found?**
 
+📄 **Paper:** [`paper/main.pdf`](https://github.com/Kendiukhov/post-selection-faithfulness/blob/main/paper/main.pdf) (preprint, 26 pp.) ·
+[`submission/manuscript.pdf`](https://github.com/Kendiukhov/post-selection-faithfulness/blob/main/submission/manuscript.pdf) (journal version)
+· archived at [`10.5281/zenodo.21891261`](https://doi.org/10.5281/zenodo.21891261)
+
 Mechanistic interpretability reports a faithfulness score — interchange-intervention
 accuracy, logit difference recovered, behavioural agreement under ablation — for a
 circuit that was *selected* by maximising that same score on the same interventions.
@@ -144,14 +148,16 @@ this paper is about).
 
 ## Paper
 
-The compiled preprint is [`paper/main.pdf`](paper/main.pdf); its source is in
-`paper/`. The version prepared for submission to *Neural Networks* (Elsevier),
+The compiled preprint is [`paper/main.pdf`](https://github.com/Kendiukhov/post-selection-faithfulness/blob/main/paper/main.pdf); its source is
+in `paper/`. The version prepared for submission to *Neural Networks* (Elsevier),
 together with the cover letter, highlights and author declarations, is in
 [`submission/`](submission/).
 
 **Author.** Ihor Kendiukhov, Institute of Medical Genetics and Applied Genomics, University of Tubingen, Tubingen, Germany (`ihor.kendiukhov@student.uni-tuebingen.de`).
 
-Machine-readable citation metadata is in `CITATION.cff`.
+**Archive.** This repository is archived at Zenodo:
+[`10.5281/zenodo.21891261`](https://doi.org/10.5281/zenodo.21891261). Machine-readable citation metadata is in
+`CITATION.cff`.
 
 ## License
 

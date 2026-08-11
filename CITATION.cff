@@ -12,6 +12,11 @@ authors:
       Institute of Medical Genetics and Applied Genomics, University of
       Tuebingen, Tuebingen, Germany
 repository-code: 'https://github.com/Kendiukhov/post-selection-faithfulness'
+doi: 10.5281/zenodo.21891261
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.21891261
+    description: Archived snapshot of the code and the cached score matrices
 abstract: >-
   A library and a set of experiments for lower confidence bounds on the graded
   faithfulness of a mechanistic circuit hypothesis that remain valid however the

@@ -58,27 +58,28 @@ sharing must be stated.
 > All code, the cached per-instance faithfulness score matrices, the analysis
 > outputs and the manuscript source are publicly available at
 > <https://github.com/Kendiukhov/post-selection-faithfulness> and are archived at
-> Zenodo (DOI: `10.5281/zenodo.XXXXXXX`). No third-party data were used: the only
+> Zenodo (DOI: `10.5281/zenodo.21891261`). No third-party data were used: the only
 > external artefact is the publicly available GPT-2 small checkpoint, downloaded
 > at run time from the Hugging Face Hub; all evaluation prompts and all small
 > transformers are generated or trained by the released code.
 
-**Before submitting:** create a Zenodo deposit from the GitHub repository (Zenodo
-has a one-click GitHub integration), then replace `10.5281/zenodo.XXXXXXX` above,
-in `manuscript.tex`, and in the `[dataset]` reference below with the minted DOI,
-and paste the DOI into the *Research data* field of the submission form.
+The deposit is live. Paste the DOI into the *Research data* field of the
+submission form as well; the manuscript already cites it.
 
-Dataset reference to add to the bibliography once the DOI exists:
+The dataset reference, as it appears in `paper/references.bib` (Elsevier strips
+the `[dataset]` marker at typesetting):
 
 ```bibtex
-@misc{kendiukhov2026psfdata,
-  author       = {Kendiukhov, Ihor},
-  title        = {Post-selection-valid confidence bounds for mechanistic
-                  faithfulness: code and per-instance score matrices},
+@misc{kendiukhov2026zenodo,
+  author    = {Kendiukhov, Ihor},
+  title     = {How Faithful Is the Circuit You Found? {P}ost-Selection-Valid
+               Confidence Bounds for Mechanistic Interpretability},
   year         = {2026},
   publisher    = {Zenodo},
-  doi          = {10.5281/zenodo.XXXXXXX},
-  note         = {[dataset]}
+  howpublished = {[dataset] Zenodo. Code, cached per-instance score matrices and
+                  analysis outputs},
+  doi          = {10.5281/zenodo.21891261},
+  url          = {https://doi.org/10.5281/zenodo.21891261}
 }
 ```
 

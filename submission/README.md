@@ -30,11 +30,10 @@ statements are also printed in the manuscript.
    Analysis; Engineering and Applications. The cover letter proposes
    **Mathematical and Computational Analysis**, with **Learning Systems** as the
    alternative.
-2. **Mint the Zenodo DOI.** The journal applies Option C of Elsevier's research
-   data policy: the data must be deposited and cited. Create a Zenodo deposit
-   from the GitHub repository, then replace `10.5281/zenodo.XXXXXXX` in
-   `manuscript.tex` and `declarations.md` with the real DOI and paste it into the
-   *Research data* field of the submission form.
+2. **Paste the Zenodo DOI into the *Research data* field.** The journal applies
+   Option C of Elsevier's research data policy: the data must be deposited and
+   cited. The deposit is live at <https://doi.org/10.5281/zenodo.21891261>
+   (`10.5281/zenodo.21891261`) and the manuscript already cites it.
 3. **Run the declarations tool** and attach the generated `.docx`.
 4. **Convert `highlights.txt` to `.docx`** (the journal requires an editable
    file); keep "highlights" in the filename.
